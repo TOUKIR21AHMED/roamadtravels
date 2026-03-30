@@ -14,6 +14,9 @@ const shopBannerRoutes = require("./routes/shopBannerRoutes");
 
 const app = express();
 
+// ✅ PORT fix (IMPORTANT)
+const PORT = process.env.PORT || 5000;
+
 app.use(cors());
 app.use(express.json());
 
@@ -22,8 +25,9 @@ mongoose
   .then(() => {
     console.log("MongoDB Connected Successfully");
 
-    app.listen(5000, () => {
-      console.log("Server running on port 5000");
+    // ✅ এখানে change করা হয়েছে
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((err) => {
