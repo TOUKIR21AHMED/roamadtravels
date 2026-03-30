@@ -25,7 +25,8 @@ function TravelGuide() {
 
   useEffect(() => {
   fetchDivisions();
-}, [fetchDivisions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   const fetchDivisions = useCallback(async () => {
   try {
