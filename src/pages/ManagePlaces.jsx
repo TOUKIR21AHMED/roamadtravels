@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import API_BASE_URL from "../config";
 function ManagePlaces() {
   const [places, setPlaces] = useState([]);
   const [message, setMessage] = useState("");
@@ -11,7 +12,7 @@ function ManagePlaces() {
 
   const fetchPlaces = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/places");
+      const res = await axios.get(`${API_BASE_URL}/api/places`);
       setPlaces(res.data);
     } catch (error) {
       console.log("Place fetch error:", error);
@@ -23,7 +24,7 @@ function ManagePlaces() {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/places/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/places/${id}`);
       setMessage("Place deleted successfully");
       fetchPlaces();
     } catch (error) {

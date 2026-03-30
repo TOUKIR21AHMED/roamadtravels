@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-
+import API_BASE_URL from "../config";
 const ManageCategories = () => {
   const [categories, setCategories] = useState([]);
   const [message, setMessage] = useState("");
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/product-categories");
+      const res = await axios.get(`${API_BASE_URL}/api/product-categories`);
       setCategories(res.data);
     } catch (error) {
       setMessage("Failed to fetch categories");
@@ -24,7 +24,7 @@ const ManageCategories = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/product-categories/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/product-categories/${id}`);
       setMessage("Category deleted successfully");
       fetchCategories();
     } catch (error) {

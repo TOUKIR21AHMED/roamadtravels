@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-
+import API_BASE_URL from "../config";
 const AdminShopBanner = () => {
   const [formData, setFormData] = useState({
     title: "",
@@ -25,7 +25,7 @@ const AdminShopBanner = () => {
     setMessage("");
 
     try {
-      await axios.post("http://localhost:5000/api/shop-banners", {
+      await axios.post(`${API_BASE_URL}/api/shop-banners`, {
         ...formData,
         serial: Number(formData.serial || 0),
       });

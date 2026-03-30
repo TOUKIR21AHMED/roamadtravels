@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import API_BASE_URL from "../config";
 const AdminProduct = () => {
   const [categories, setCategories] = useState([]);
   const [message, setMessage] = useState("");
@@ -19,7 +19,7 @@ const AdminProduct = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/product-categories");
+        const res = await axios.get(`${API_BASE_URL}/api/product-categories`);
         setCategories(res.data.filter((cat) => cat.status === "active"));
       } catch (error) {
         console.error(error);
@@ -55,7 +55,7 @@ const AdminProduct = () => {
     setMessage("");
 
     try {
-      await axios.post("http://localhost:5000/api/products", {
+      await axios.post(`${API_BASE_URL}/api/products`, {
         ...formData,
         price: Number(formData.price),
         stock: Number(formData.stock || 0),

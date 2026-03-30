@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-
+import API_BASE_URL from "../config";
 const ManageProducts = () => {
   const [products, setProducts] = useState([]);
   const [message, setMessage] = useState("");
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/products?limit=1000");
+      const res = await axios.get(`${API_BASE_URL}/api/products?limit=1000`);
       setProducts(res.data.products || []);
     } catch (error) {
       setMessage("Failed to fetch products");
@@ -24,7 +24,7 @@ const ManageProducts = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/products/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/products/${id}`);
       setMessage("Product deleted successfully");
       fetchProducts();
     } catch (error) {

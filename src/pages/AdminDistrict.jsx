@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import API_BASE_URL from "../config";
 function AdminDistrict() {
   const [divisions, setDivisions] = useState([]);
   const [formData, setFormData] = useState({
@@ -19,7 +19,7 @@ function AdminDistrict() {
 
   const fetchDivisions = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/divisions");
+      const res = await axios.get(`${API_BASE_URL}/api/divisions`);
       setDivisions(res.data);
     } catch (error) {
       console.log("Division fetch error:", error);
@@ -37,7 +37,7 @@ function AdminDistrict() {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:5000/api/districts", formData);
+      await axios.post(`${API_BASE_URL}/api/districts`, formData);
 
       setMessage("District added successfully");
 

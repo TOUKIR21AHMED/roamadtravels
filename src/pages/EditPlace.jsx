@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-
+import API_BASE_URL from "../config";
 function EditPlace() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ function EditPlace() {
 
   const fetchDistricts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/districts");
+      const res = await axios.get(`${API_BASE_URL}/api/districts`);
       setDistricts(res.data);
     } catch (error) {
       console.log(error);
@@ -34,7 +34,7 @@ function EditPlace() {
 
   const fetchPlace = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/places");
+      const res = await axios.get(`${API_BASE_URL}/api/places`);
       const found = res.data.find((item) => item._id === id);
 
       if (found) {
@@ -63,7 +63,7 @@ function EditPlace() {
     e.preventDefault();
 
     try {
-      await axios.put(`http://localhost:5000/api/places/${id}`, formData);
+      await axios.put(`${API_BASE_URL}/api/places/${id}`, formData);
       setMessage("Place updated successfully");
 
       setTimeout(() => {

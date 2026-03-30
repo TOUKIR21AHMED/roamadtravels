@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-
+import API_BASE_URL from "../config";
 function EditDistrict() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ function EditDistrict() {
 
   const fetchDivisions = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/divisions");
+      const res = await axios.get(`${API_BASE_URL}/api/divisions`);
       setDivisions(res.data);
     } catch (error) {
       console.log(error);
@@ -33,7 +33,7 @@ function EditDistrict() {
 
   const fetchDistrict = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/districts");
+      const res = await axios.get(`${API_BASE_URL}/api/districts`);
       const found = res.data.find((item) => item._id === id);
 
       if (found) {
@@ -61,7 +61,7 @@ function EditDistrict() {
     e.preventDefault();
 
     try {
-      await axios.put(`http://localhost:5000/api/districts/${id}`, formData);
+      await axios.put(`${API_BASE_URL}/api/districts/${id}`, formData);
       setMessage("District updated successfully");
 
       setTimeout(() => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import API_BASE_URL from "../config";
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import {
@@ -35,7 +36,7 @@ const divisionOrder = [
 
 const fetchDivisions = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/divisions");
+    const res = await axios.get(`${API_BASE_URL}/api/divisions`);
 
     const sortedDivisions = res.data.sort((a, b) => {
       return (
@@ -52,7 +53,7 @@ const fetchDivisions = async () => {
 
 const fetchGuideDistricts = async (divisionId, divisionName) => {
   try {
-    const res = await axios.get(`http://localhost:5000/api/districts/by-division/${divisionId}`)
+    const res = await axios.get(`${API_BASE_URL}/api/districts/by-division/${divisionId}`)
     setGuideDistricts(res.data)
     setActiveDivisionName(divisionName)
   } catch (error) {

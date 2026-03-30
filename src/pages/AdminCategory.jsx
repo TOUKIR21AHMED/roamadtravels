@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import API_BASE_URL from "../config";
 
 const AdminCategory = () => {
   const [formData, setFormData] = useState({
@@ -35,7 +36,7 @@ const AdminCategory = () => {
     setMessage("");
 
     try {
-      await axios.post("http://localhost:5000/api/product-categories", formData);
+      await axios.post(`${API_BASE_URL}/api/product-categories`, formData);
       setMessage("Category added successfully");
       setFormData({
         name: "",

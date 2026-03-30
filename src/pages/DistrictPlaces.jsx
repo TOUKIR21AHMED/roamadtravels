@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-
+import API_BASE_URL from "../config";
 function DistrictPlaces() {
   const { slug } = useParams();
 
@@ -16,13 +16,13 @@ function DistrictPlaces() {
   const fetchDistrictAndPlaces = async () => {
     try {
       const districtRes = await axios.get(
-        `http://localhost:5000/api/districts/slug/${slug}`
+        `${API_BASE_URL}/api/districts/slug/${slug}`
       );
 
       setDistrict(districtRes.data);
 
       const placesRes = await axios.get(
-        `http://localhost:5000/api/places/by-district/${districtRes.data._id}`
+        `${API_BASE_URL}/api/places/by-district/${districtRes.data._id}`
       );
 
       setPlaces(placesRes.data);

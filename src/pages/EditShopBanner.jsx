@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-
+import API_BASE_URL from "../config";
 const EditShopBanner = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const EditShopBanner = () => {
   useEffect(() => {
     const fetchBanner = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/shop-banners/${id}`);
+        const res = await axios.get(`${API_BASE_URL}/api/shop-banners/${id}`);
 
         setFormData({
           title: res.data.title || "",
@@ -48,7 +48,7 @@ const EditShopBanner = () => {
     setMessage("");
 
     try {
-      await axios.put(`http://localhost:5000/api/shop-banners/${id}`, {
+      await axios.put(`${API_BASE_URL}/api/shop-banners/${id}`, {
         ...formData,
         serial: Number(formData.serial || 0),
       });

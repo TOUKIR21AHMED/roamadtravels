@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import API_BASE_URL from "../config";
 const ManageOrders = () => {
   const [orders, setOrders] = useState([]);
   const [message, setMessage] = useState("");
@@ -8,7 +8,7 @@ const ManageOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/orders");
+      const res = await axios.get(`${API_BASE_URL}/api/orders`);
       setOrders(res.data);
     } catch (error) {
       setMessage("Failed to fetch orders");
@@ -27,7 +27,7 @@ const ManageOrders = () => {
     if (!confirmDeliver) return;
 
     try {
-      await axios.put(`http://localhost:5000/api/orders/${id}/status`, {
+      await axios.put(`${API_BASE_URL}/api/orders/${id}/status`, {
         orderStatus: "delivered",
         paymentStatus: "verified",
       });
@@ -55,7 +55,7 @@ const ManageOrders = () => {
     if (!confirmCancel) return;
 
     try {
-      await axios.put(`http://localhost:5000/api/orders/${id}/status`, {
+      await axios.put(`${API_BASE_URL}/api/orders/${id}/status`, {
         orderStatus: "cancelled",
       });
 

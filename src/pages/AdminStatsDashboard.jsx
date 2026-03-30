@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
+import API_BASE_URL from "../config";
 import {
   BarChart,
   Bar,
@@ -50,9 +51,9 @@ const AdminStatsDashboard = () => {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const ordersRes = await axios.get("http://localhost:5000/api/orders");
-        const productsRes = await axios.get("http://localhost:5000/api/products?limit=1000");
-        const categoriesRes = await axios.get("http://localhost:5000/api/product-categories");
+        const ordersRes = await axios.get(`${API_BASE_URL}/api/orders`);
+        const productsRes = await axios.get(`${API_BASE_URL}/api/products?limit=1000`);
+        const categoriesRes = await axios.get(`${API_BASE_URL}/api/product-categories`);
 
         const orders = ordersRes.data || [];
         const products = productsRes.data?.products || [];

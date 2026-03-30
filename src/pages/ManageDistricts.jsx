@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import API_BASE_URL from "../config";
 function ManageDistricts() {
   const [districts, setDistricts] = useState([]);
   const [message, setMessage] = useState("");
@@ -11,7 +12,7 @@ function ManageDistricts() {
 
   const fetchDistricts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/districts");
+      const res = await axios.get(`${API_BASE_URL}/api/districts`);
       setDistricts(res.data);
     } catch (error) {
       console.log("District fetch error:", error);
@@ -23,7 +24,7 @@ function ManageDistricts() {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/districts/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/districts/${id}`);
       setMessage("District deleted successfully");
       fetchDistricts();
     } catch (error) {

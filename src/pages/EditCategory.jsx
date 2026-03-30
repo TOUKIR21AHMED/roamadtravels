@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-
+import API_BASE_URL from "../config";
 const EditCategory = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const EditCategory = () => {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/product-categories/${id}`);
+        const res = await axios.get(`${API_BASE_URL}/api/product-categories/${id}`);
         setFormData({
           name: res.data.name || "",
           slug: res.data.slug || "",
@@ -56,7 +56,7 @@ const EditCategory = () => {
     setMessage("");
 
     try {
-      await axios.put(`http://localhost:5000/api/product-categories/${id}`, formData);
+      await axios.put(`${API_BASE_URL}/api/product-categories/${id}`, formData);
       navigate("/manage-categories");
     } catch (error) {
       setMessage(error.response?.data?.message || "Failed to update category");

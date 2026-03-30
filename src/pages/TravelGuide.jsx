@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-
+import API_BASE_URL from "../config";
 function TravelGuide() {
   const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -29,7 +29,7 @@ function TravelGuide() {
 
   const fetchDivisions = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/divisions");
+      const res = await axios.get(`${API_BASE_URL}/api/divisions`);
 
       const sortedDivisions = [...res.data].sort((a, b) => {
         const aIndex = divisionOrder.indexOf(a.nameBn);
@@ -50,7 +50,7 @@ function TravelGuide() {
   const fetchDistricts = async (id, name) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/districts/by-division/${id}`
+        `${API_BASE_URL}/api/districts/by-division/${id}`
       );
       setDistricts(res.data);
       setActiveDivisionName(name);
@@ -68,7 +68,7 @@ function TravelGuide() {
 
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/places/search/${search}`
+        `${API_BASE_URL}/api/places/search/${search}`
       );
       setSearchResults(res.data);
       setSearchDone(true);

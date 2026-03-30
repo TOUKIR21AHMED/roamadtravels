@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import API_BASE_URL from "../config";
 function AdminPlace() {
   const [districts, setDistricts] = useState([]);
   const [formData, setFormData] = useState({
@@ -20,7 +20,7 @@ function AdminPlace() {
 
   const fetchDistricts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/districts");
+      const res = await axios.get(`${API_BASE_URL}/api/districts`);
       setDistricts(res.data);
     } catch (error) {
       console.log("District fetch error:", error);
@@ -38,7 +38,7 @@ function AdminPlace() {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:5000/api/places", formData);
+      await axios.post(`${API_BASE_URL}/api/places`, formData);
 
       setMessage("Place added successfully");
 

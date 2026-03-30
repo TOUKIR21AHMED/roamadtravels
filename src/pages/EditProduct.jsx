@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-
+import API_BASE_URL from "../config";
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,8 +24,8 @@ const EditProduct = () => {
     const fetchAllData = async () => {
       try {
         const [productRes, categoryRes] = await Promise.all([
-          axios.get(`http://localhost:5000/api/products/${id}`),
-          axios.get("http://localhost:5000/api/product-categories"),
+          axios.get(`${API_BASE_URL}/api/products/${id}`),
+          axios.get(`${API_BASE_URL}/api/product-categories`),
         ]);
 
         const product = productRes.data;
@@ -76,7 +76,7 @@ const EditProduct = () => {
     setMessage("");
 
     try {
-      await axios.put(`http://localhost:5000/api/products/${id}`, {
+      await axios.put(`${API_BASE_URL}/api/products/${id}`, {
         ...formData,
         price: Number(formData.price),
         stock: Number(formData.stock || 0),

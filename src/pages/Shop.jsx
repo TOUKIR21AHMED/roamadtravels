@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { FaSearch, FaShoppingCart, FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import API_BASE_URL from "../config";
 
-const API_BASE = "http://localhost:5000";
 
 const ProductSkeleton = () => {
   return (
@@ -66,7 +66,7 @@ const Shop = () => {
 
   const fetchBanners = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/shop-banners/active/list`);
+      const res = await axios.get(`${API_BASE_URL}/api/shop-banners/active/list`);
       setBanners(res.data || []);
     } catch (error) {
       console.error("Failed to fetch banners", error);
@@ -75,7 +75,7 @@ const Shop = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/product-categories`);
+      const res = await axios.get(`${API_BASE_URL}/api/product-categories`);
       const activeCats = (res.data || []).filter((cat) => cat.status === "active");
       setCategories(activeCats);
 
@@ -106,7 +106,7 @@ const Shop = () => {
         params.categoryId = activeCategory;
       }
 
-      const res = await axios.get(`${API_BASE}/api/products`, { params });
+      const res = await axios.get(`${API_BASE_URL}/api/products`, { params });
 
       setProducts(res.data.products || []);
       setTotalPages(res.data.totalPages || 1);

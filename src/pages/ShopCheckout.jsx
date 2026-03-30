@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config";
 
-const API = "http://localhost:5000";
 
 const ShopCheckout = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -131,7 +131,7 @@ const ShopCheckout = () => {
         total,
       };
 
-      await axios.post(`${API}/api/orders`, payload);
+      await axios.post(`${API_BASE_URL}/api/orders`, payload);
 
       localStorage.removeItem("shop_cart_items");
       setCartItems([]);

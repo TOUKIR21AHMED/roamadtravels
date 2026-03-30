@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-
+import API_BASE_URL from "../config";
 const ManageShopBanners = () => {
   const [banners, setBanners] = useState([]);
   const [message, setMessage] = useState("");
 
   const fetchBanners = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/shop-banners");
+      const res = await axios.get(`${API_BASE_URL}/api/shop-banners`);
       setBanners(res.data || []);
     } catch (error) {
       setMessage("Failed to fetch banners");
@@ -24,7 +24,7 @@ const ManageShopBanners = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/shop-banners/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/shop-banners/${id}`);
       setMessage("Banner deleted successfully");
       fetchBanners();
     } catch (error) {
