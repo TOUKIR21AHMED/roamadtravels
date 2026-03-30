@@ -1,7 +1,19 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../config";
+
+const divisionOrder = [
+  "ঢাকা",
+  "চট্টগ্রাম",
+  "রাজশাহী",
+  "খুলনা",
+  "সিলেট",
+  "বরিশাল",
+  "ময়মনসিংহ",
+  "ময়মনসিংহ",
+  "রংপুর",
+];
 
 function TravelGuide() {
   const [divisions, setDivisions] = useState([]);
@@ -11,18 +23,6 @@ function TravelGuide() {
   const [searchDone, setSearchDone] = useState(false);
   const [activeDivisionName, setActiveDivisionName] = useState("");
   const [activePlace, setActivePlace] = useState(null);
-
-  const divisionOrder = [
-    "ঢাকা",
-    "চট্টগ্রাম",
-    "রাজশাহী",
-    "খুলনা",
-    "সিলেট",
-    "বরিশাল",
-    "ময়মনসিংহ",
-    "ময়মনসিংহ",
-    "রংপুর",
-  ];
 
   useEffect(() => {
     const fetchDivisions = async () => {
@@ -46,7 +46,7 @@ function TravelGuide() {
     };
 
     fetchDivisions();
-  }, [divisionOrder]);
+  }, []);
 
   const fetchDistricts = async (id, name) => {
     try {
