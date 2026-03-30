@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../config";
 
@@ -25,25 +25,39 @@ function TravelGuide() {
   const [activePlace, setActivePlace] = useState(null);
 
   useEffect(() => {
-  const fetchDivisions = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/divisions`);
-      const data = await res.json();
-      setDivisions(data);
-    } catch (error) {
-      console.error("Error fetching divisions:", error);
-    }
-  };
+    const loadDivisions = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/divisions`);
+        setDivisions(res.data || []);
+      } catch (error) {
+        console.error("Error fetching divisions:", error);
+      }
+    };
 
-  fetchDivisions();
-}, []);
+    loadDivisions();
+  }, []);
+
+  const sortedDivisions = useMemo(() => {
+    return [...divisions].sort((a, b) => {
+      const aIndex = divisionOrder.indexOf(a.nameBn);
+      const bIndex = divisionOrder.indexOf(b.nameBn);
+
+      if (aIndex === -1 && bIndex === -1) {
+        return (a.nameBn || "").localeCompare(b.nameBn || "");
+      }
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+
+      return aIndex - bIndex;
+    });
+  }, [divisions]);
 
   const fetchDistricts = async (id, name) => {
     try {
       const res = await axios.get(
         `${API_BASE_URL}/api/districts/by-division/${id}`
       );
-      setDistricts(res.data);
+      setDistricts(res.data || []);
       setActiveDivisionName(name);
     } catch (error) {
       console.log("District fetch error:", error);
@@ -59,12 +73,14 @@ function TravelGuide() {
 
     try {
       const res = await axios.get(
-        `${API_BASE_URL}/api/places/search/${search}`
+        `${API_BASE_URL}/api/places/search/${encodeURIComponent(search.trim())}`
       );
-      setSearchResults(res.data);
+      setSearchResults(res.data || []);
       setSearchDone(true);
     } catch (error) {
       console.log("Search error:", error);
+      setSearchResults([]);
+      setSearchDone(true);
     }
   };
 
@@ -251,21 +267,6 @@ function TravelGuide() {
           color: #1D3815;
           font-weight: 700;
           margin-bottom: 18px;
-        }
-
-        .district-card {
-          border: 1px solid #e7efe2;
-          border-radius: 14px;
-          padding: 14px 16px;
-          background: #fafdf8;
-          color: #1D3815;
-          font-weight: 600;
-          transition: 0.2s ease;
-        }
-
-        .district-card:hover {
-          background: #eef8ea;
-          transform: translateY(-3px);
         }
 
         .guide-district-grid {
@@ -538,7 +539,7 @@ function TravelGuide() {
                         </p>
 
                         <Link
-                          to={`/travel-guide/district/${place.districtId.slug}`}
+                          to={`/travel-guide/district/${place.districtId?.slug || ""}`}
                           className="guide-link-btn"
                         >
                           বিস্তারিত দেখুন
@@ -561,7 +562,7 @@ function TravelGuide() {
         </div>
 
         <div className="row">
-          {divisions.map((div) => (
+          {sortedDivisions.map((div) => (
             <div key={div._id} className="col-lg-3 col-md-4 col-sm-6 mb-4">
               <button
                 type="button"
@@ -589,7 +590,7 @@ function TravelGuide() {
                   to={`/travel-guide/district/${district.slug}`}
                   className="guide-district-link"
                 >
-                  <i className="fa fa-map-marker-alt me-2"></i>{" "}
+                  <i className="fa fa-map-marker-alt me-2"></i>
                   {district.nameBn}
                 </Link>
               ))}
@@ -618,6 +619,7 @@ function TravelGuide() {
 
                   <div className="static-guide-btn-wrap">
                     <button
+                      type="button"
                       className="guide-link-btn"
                       onClick={() => setActivePlace(card)}
                     >
@@ -648,6 +650,7 @@ function TravelGuide() {
               />
 
               <button
+                type="button"
                 className="premium-modal-close"
                 onClick={() => setActivePlace(null)}
               >
