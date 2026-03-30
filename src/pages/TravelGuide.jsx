@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../config";
+
 function TravelGuide() {
   const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -20,33 +21,32 @@ function TravelGuide() {
     "বরিশাল",
     "ময়মনসিংহ",
     "ময়মনসিংহ",
-    "রংপুর"
+    "রংপুর",
   ];
 
   useEffect(() => {
-  fetchDivisions();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+    const fetchDivisions = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/divisions`);
 
-  const fetchDivisions = useCallback(async () => {
-  try {
-    const res = await axios.get(`${API_BASE_URL}/api/divisions`);
+        const sortedDivisions = [...res.data].sort((a, b) => {
+          const aIndex = divisionOrder.indexOf(a.nameBn);
+          const bIndex = divisionOrder.indexOf(b.nameBn);
 
-    const sortedDivisions = [...res.data].sort((a, b) => {
-      const aIndex = divisionOrder.indexOf(a.nameBn);
-      const bIndex = divisionOrder.indexOf(b.nameBn);
+          const safeA = aIndex === -1 ? 999 : aIndex;
+          const safeB = bIndex === -1 ? 999 : bIndex;
 
-      const safeA = aIndex === -1 ? 999 : aIndex;
-      const safeB = bIndex === -1 ? 999 : bIndex;
+          return safeA - safeB;
+        });
 
-      return safeA - safeB;
-    });
+        setDivisions(sortedDivisions);
+      } catch (error) {
+        console.log("Division fetch error:", error);
+      }
+    };
 
-    setDivisions(sortedDivisions);
-  } catch (error) {
-    console.log("Division fetch error:", error);
-  }
-}, [divisionOrder]);
+    fetchDivisions();
+  }, []);
 
   const fetchDistricts = async (id, name) => {
     try {
@@ -86,7 +86,7 @@ function TravelGuide() {
         "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
       text: "বাংলাদেশের অন্যতম জনপ্রিয় পাহাড়ি পর্যটন কেন্দ্র।",
       fullDescription:
-        "সাজেক ভ্যালি বাংলাদেশের অন্যতম জনপ্রিয় পাহাড়ি ভ্রমণ স্থান। মেঘের খেলা, পাহাড়ি রাস্তা, শান্ত পরিবেশ এবং প্রাকৃতিক সৌন্দর্যের জন্য এটি পর্যটকদের কাছে খুবই আকর্ষণীয়। রাঙামাটি জেলার অন্তর্গত এই স্থানটি পরিবার, বন্ধু বা দম্পতিদের জন্য অসাধারণ একটি ভ্রমণ গন্তব্য।"
+        "সাজেক ভ্যালি বাংলাদেশের অন্যতম জনপ্রিয় পাহাড়ি ভ্রমণ স্থান। মেঘের খেলা, পাহাড়ি রাস্তা, শান্ত পরিবেশ এবং প্রাকৃতিক সৌন্দর্যের জন্য এটি পর্যটকদের কাছে খুবই আকর্ষণীয়। রাঙামাটি জেলার অন্তর্গত এই স্থানটি পরিবার, বন্ধু বা দম্পতিদের জন্য অসাধারণ একটি ভ্রমণ গন্তব্য।",
     },
     {
       id: 2,
@@ -95,7 +95,7 @@ function TravelGuide() {
         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
       text: "বাংলাদেশের একমাত্র প্রবাল দ্বীপ, অপরূপ সৌন্দর্যে ভরা।",
       fullDescription:
-        "সেন্ট মার্টিন বাংলাদেশের একমাত্র প্রবাল দ্বীপ এবং সমুদ্রপ্রেমীদের জন্য স্বর্গের মতো একটি জায়গা। নীল পানি, সাদা বালু, প্রবালের বৈচিত্র্য এবং শান্ত পরিবেশ এই দ্বীপকে বিশেষভাবে অনন্য করেছে। যারা সমুদ্রের পাশে নিরিবিলি সময় কাটাতে চান, তাদের জন্য এটি দারুণ একটি destination।"
+        "সেন্ট মার্টিন বাংলাদেশের একমাত্র প্রবাল দ্বীপ এবং সমুদ্রপ্রেমীদের জন্য স্বর্গের মতো একটি জায়গা। নীল পানি, সাদা বালু, প্রবালের বৈচিত্র্য এবং শান্ত পরিবেশ এই দ্বীপকে বিশেষভাবে অনন্য করেছে। যারা সমুদ্রের পাশে নিরিবিলি সময় কাটাতে চান, তাদের জন্য এটি দারুণ একটি destination।",
     },
     {
       id: 3,
@@ -104,7 +104,7 @@ function TravelGuide() {
         "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
       text: "কাপ্তাই লেক আর পাহাড়ি সৌন্দর্যের এক অনন্য মিশ্রণ।",
       fullDescription:
-        "রাঙ্গামাটি বাংলাদেশের অন্যতম সুন্দর পাহাড়ি জেলা, যা কাপ্তাই লেকের জন্য বিশেষভাবে বিখ্যাত। এখানে নীল জল, পাহাড়, সবুজ গাছপালা ও নৌভ্রমণের অভিজ্ঞতা মিলিয়ে চমৎকার একটি পরিবেশ পাওয়া যায়। প্রকৃতি ভালোবাসেন এমন সবার জন্য রাঙ্গামাটি দারুণ একটি পর্যটন কেন্দ্র।"
+        "রাঙ্গামাটি বাংলাদেশের অন্যতম সুন্দর পাহাড়ি জেলা, যা কাপ্তাই লেকের জন্য বিশেষভাবে বিখ্যাত। এখানে নীল জল, পাহাড়, সবুজ গাছপালা ও নৌভ্রমণের অভিজ্ঞতা মিলিয়ে চমৎকার একটি পরিবেশ পাওয়া যায়। প্রকৃতি ভালোবাসেন এমন সবার জন্য রাঙ্গামাটি দারুণ একটি পর্যটন কেন্দ্র।",
     },
     {
       id: 4,
@@ -113,7 +113,7 @@ function TravelGuide() {
         "https://images.unsplash.com/photo-1470770903676-69b98201ea1c",
       text: "বিশ্বের বৃহত্তম ম্যানগ্রোভ বন ও রয়েল বেঙ্গল টাইগারের আবাস।",
       fullDescription:
-        "সুন্দরবন বিশ্বের সবচেয়ে বড় ম্যানগ্রোভ বন এবং বাংলাদেশে প্রকৃতিপ্রেমীদের জন্য একটি অসাধারণ স্থান। এটি রয়েল বেঙ্গল টাইগার, হরিণ, কুমির এবং নানা প্রজাতির পাখির আবাসস্থল। নদী, খাল, বন ও বন্যপ্রাণীর সমন্বয়ে এটি এক অনন্য প্রাকৃতিক ঐতিহ্য।"
+        "সুন্দরবন বিশ্বের সবচেয়ে বড় ম্যানগ্রোভ বন এবং বাংলাদেশে প্রকৃতিপ্রেমীদের জন্য একটি অসাধারণ স্থান। এটি রয়েল বেঙ্গল টাইগার, হরিণ, কুমির এবং নানা প্রজাতির পাখির আবাসস্থল। নদী, খাল, বন ও বন্যপ্রাণীর সমন্বয়ে এটি এক অনন্য প্রাকৃতিক ঐতিহ্য।",
     },
     {
       id: 5,
@@ -122,7 +122,7 @@ function TravelGuide() {
         "https://images.unsplash.com/photo-1493558103817-58b2924bce98",
       text: "এক জায়গা থেকে সূর্যোদয় আর সূর্যাস্ত দেখার জন্য বিখ্যাত।",
       fullDescription:
-        "কুয়াকাটা বাংলাদেশের এমন একটি সমুদ্র সৈকত, যেখানে একই জায়গা থেকে সূর্যোদয় ও সূর্যাস্ত দেখা যায়। সমুদ্র, ঝাউবন, শান্ত পরিবেশ এবং বিস্তীর্ণ সৈকত এটিকে একটি বিশেষ পর্যটন গন্তব্যে পরিণত করেছে। প্রকৃতির সৌন্দর্য উপভোগ করতে চাইলে কুয়াকাটা অবশ্যই দেখার মতো।"
+        "কুয়াকাটা বাংলাদেশের এমন একটি সমুদ্র সৈকত, যেখানে একই জায়গা থেকে সূর্যোদয় ও সূর্যাস্ত দেখা যায়। সমুদ্র, ঝাউবন, শান্ত পরিবেশ এবং বিস্তীর্ণ সৈকত এটিকে একটি বিশেষ পর্যটন গন্তব্যে পরিণত করেছে। প্রকৃতির সৌন্দর্য উপভোগ করতে চাইলে কুয়াকাটা অবশ্যই দেখার মতো।",
     },
     {
       id: 6,
@@ -131,7 +131,7 @@ function TravelGuide() {
         "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
       text: "চায়ের রাজধানী, সবুজ প্রকৃতি আর শান্ত পরিবেশে ভরা।",
       fullDescription:
-        "শ্রীমঙ্গলকে বাংলাদেশের চায়ের রাজধানী বলা হয়। অসংখ্য চা বাগান, সবুজ প্রাকৃতিক পরিবেশ, লাউয়াছড়া জাতীয় উদ্যান এবং শান্ত আবহাওয়া এই অঞ্চলকে ভ্রমণের জন্য অনন্য করে তুলেছে। যারা নিরিবিলি প্রকৃতি ও সবুজের মাঝে সময় কাটাতে চান, তাদের জন্য শ্রীমঙ্গল একদম perfect।"
+        "শ্রীমঙ্গলকে বাংলাদেশের চায়ের রাজধানী বলা হয়। অসংখ্য চা বাগান, সবুজ প্রাকৃতিক পরিবেশ, লাউয়াছড়া জাতীয় উদ্যান এবং শান্ত আবহাওয়া এই অঞ্চলকে ভ্রমণের জন্য অনন্য করে তুলেছে। যারা নিরিবিলি প্রকৃতি ও সবুজের মাঝে সময় কাটাতে চান, তাদের জন্য শ্রীমঙ্গল একদম perfect।",
     },
   ];
 
@@ -572,13 +572,12 @@ function TravelGuide() {
 
         <div className="row">
           {divisions.map((div) => (
-            <div
-              key={div._id}
-              className="col-lg-3 col-md-4 col-sm-6 mb-4"
-            >
+            <div key={div._id} className="col-lg-3 col-md-4 col-sm-6 mb-4">
               <button
                 type="button"
-                className={`division-card w-100 ${activeDivisionName === div.nameBn ? "active-division" : ""}`}
+                className={`division-card w-100 ${
+                  activeDivisionName === div.nameBn ? "active-division" : ""
+                }`}
                 onClick={() => fetchDistricts(div._id, div.nameBn)}
               >
                 <i className="fa fa-map-marker-alt me-2"></i> {div.nameBn}
@@ -600,7 +599,8 @@ function TravelGuide() {
                   to={`/travel-guide/district/${district.slug}`}
                   className="guide-district-link"
                 >
-                  <i className="fa fa-map-marker-alt me-2"></i> {district.nameBn}
+                  <i className="fa fa-map-marker-alt me-2"></i>{" "}
+                  {district.nameBn}
                 </Link>
               ))}
             </div>
@@ -610,7 +610,9 @@ function TravelGuide() {
 
       <section className="container py-5">
         <div className="text-center mb-5">
-          <h2 className="guide-section-title">বাংলাদেশের জনপ্রিয় ভ্রমণ স্থান</h2>
+          <h2 className="guide-section-title">
+            বাংলাদেশের জনপ্রিয় ভ্রমণ স্থান
+          </h2>
         </div>
 
         <div className="row">
@@ -619,7 +621,9 @@ function TravelGuide() {
               <div className="static-guide-card">
                 <img src={card.image} alt={card.title} />
                 <div className="static-guide-body">
-                  <h5 className="static-guide-title"><i className="fa fa-map-marker-alt me-2"></i> {card.title}</h5>
+                  <h5 className="static-guide-title">
+                    <i className="fa fa-map-marker-alt me-2"></i> {card.title}
+                  </h5>
                   <p className="static-guide-text">{card.text}</p>
 
                   <div className="static-guide-btn-wrap">
@@ -638,7 +642,10 @@ function TravelGuide() {
       </section>
 
       {activePlace && (
-        <div className="premium-modal-overlay" onClick={() => setActivePlace(null)}>
+        <div
+          className="premium-modal-overlay"
+          onClick={() => setActivePlace(null)}
+        >
           <div
             className="premium-modal-box"
             onClick={(e) => e.stopPropagation()}
@@ -659,9 +666,15 @@ function TravelGuide() {
             </div>
 
             <div className="premium-modal-content">
-              <div className="premium-modal-subtitle">বাংলাদেশের জনপ্রিয় ভ্রমণ স্থান</div>
-              <h2 className="premium-modal-title"><i className="fa fa-map-marker-alt me-2"></i> {activePlace.title}</h2>
-              <p className="premium-modal-text">{activePlace.fullDescription}</p>
+              <div className="premium-modal-subtitle">
+                বাংলাদেশের জনপ্রিয় ভ্রমণ স্থান
+              </div>
+              <h2 className="premium-modal-title">
+                <i className="fa fa-map-marker-alt me-2"></i> {activePlace.title}
+              </h2>
+              <p className="premium-modal-text">
+                {activePlace.fullDescription}
+              </p>
             </div>
           </div>
         </div>
