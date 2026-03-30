@@ -25,28 +25,18 @@ function TravelGuide() {
   const [activePlace, setActivePlace] = useState(null);
 
   useEffect(() => {
-    const fetchDivisions = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/divisions`);
+  const fetchDivisions = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/divisions`);
+      const data = await res.json();
+      setDivisions(data);
+    } catch (error) {
+      console.error("Error fetching divisions:", error);
+    }
+  };
 
-        const sortedDivisions = [...res.data].sort((a, b) => {
-          const aIndex = divisionOrder.indexOf(a.nameBn);
-          const bIndex = divisionOrder.indexOf(b.nameBn);
-
-          const safeA = aIndex === -1 ? 999 : aIndex;
-          const safeB = bIndex === -1 ? 999 : bIndex;
-
-          return safeA - safeB;
-        });
-
-        setDivisions(sortedDivisions);
-      } catch (error) {
-        console.log("Division fetch error:", error);
-      }
-    };
-
-    fetchDivisions();
-  }, []);
+  fetchDivisions();
+}, []);
 
   const fetchDistricts = async (id, name) => {
     try {
