@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function Footer() {
   return (
@@ -131,7 +130,7 @@ export default function Footer() {
           <div className="row">
             <div className="col-md-6 text-center text-md-start mb-3 mb-md-0">
               ©{" "}
-              <a className="border-bottom" href="#">
+              <a className="border-bottom" href="javascript:void(0)">
                 Your Site Name
               </a>
               , All Right Reserved.

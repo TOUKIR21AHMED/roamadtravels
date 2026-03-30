@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react'
-import API_BASE_URL from "../config";
-import { Link } from 'react-router-dom'
-import axios from 'axios'
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import {
-  FaShoppingBag,
-  FaPassport,
-  FaPlane,
+  FaCompass,
+  FaConciergeBell,
   FaHome,
   FaInfoCircle,
-  FaConciergeBell,
-  FaSuitcaseRolling,
-  FaCompass,
+  FaList,
+  FaPassport,
   FaPhoneAlt,
-  FaList
+  FaPlane,
+  FaShoppingBag,
+  FaSuitcaseRolling
 } from "react-icons/fa";
+import { Link } from 'react-router-dom';
+import API_BASE_URL from "../config";
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -737,11 +737,11 @@ const fetchGuideDistricts = async (divisionId, divisionName) => {
           </div>
           <div className="col-lg-4 text-center text-lg-end">
             <div className="d-inline-flex align-items-center" style={{ height: 45 }}>
-              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="#"><i className="fab fa-twitter fw-normal" /></a>
-              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="#"><i className="fab fa-facebook-f fw-normal" /></a>
-              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="#"><i className="fab fa-linkedin-in fw-normal" /></a>
-              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="#"><i className="fab fa-instagram fw-normal" /></a>
-              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle" href="#"><i className="fab fa-youtube fw-normal" /></a>
+              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="javascript:void(0)"><i className="fab fa-twitter fw-normal" /></a>
+              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="javascript:void(0)"><i className="fab fa-facebook-f fw-normal" /></a>
+              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="javascript:void(0)"><i className="fab fa-linkedin-in fw-normal" /></a>
+              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle me-2" href="javascript:void(0)"><i className="fab fa-instagram fw-normal" /></a>
+              <a className="btn btn-sm btn-outline-light btn-sm-square rounded-circle" href="javascript:void(0)"><i className="fab fa-youtube fw-normal" /></a>
             </div>
           </div>
         </div>

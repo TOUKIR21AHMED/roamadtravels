@@ -1,4 +1,3 @@
-import React from 'react'
 
 export default function Home() {
   return (
@@ -368,14 +367,14 @@ export default function Home() {
                 </p>
                 <div className="d-flex justify-content-center mb-2">
                   <a
-                    href="#"
+                    href="javascript:void(0)"
                     className="btn btn-sm btn-primary px-3 border-end"
                     style={{ borderRadius: "30px 0 0 30px" }}
                   >
                     Read More
                   </a>
                   <a
-                    href="#"
+                    href="javascript:void(0)"
                     className="btn btn-sm btn-primary px-3"
                     style={{ borderRadius: "0 30px 30px 0" }}
                   >
@@ -417,14 +416,14 @@ export default function Home() {
                 </p>
                 <div className="d-flex justify-content-center mb-2">
                   <a
-                    href="#"
+                    href="javascript:void(0)"
                     className="btn btn-sm btn-primary px-3 border-end"
                     style={{ borderRadius: "30px 0 0 30px" }}
                   >
                     Read More
                   </a>
                   <a
-                    href="#"
+                    href="javascript:void(0)"
                     className="btn btn-sm btn-primary px-3"
                     style={{ borderRadius: "0 30px 30px 0" }}
                   >
@@ -466,14 +465,14 @@ export default function Home() {
                 </p>
                 <div className="d-flex justify-content-center mb-2">
                   <a
-                    href="#"
+                    href="javascript:void(0)"
                     className="btn btn-sm btn-primary px-3 border-end"
                     style={{ borderRadius: "30px 0 0 30px" }}
                   >
                     Read More
                   </a>
                   <a
-                    href="#"
+                    href="javascript:void(0)"
                     className="btn btn-sm btn-primary px-3"
                     style={{ borderRadius: "0 30px 30px 0" }}
                   >
