@@ -34,22 +34,7 @@ const divisionOrder = [
   "রংপুর"
 ];
 
-const fetchDivisions = async () => {
-  try {
-    const res = await axios.get(`${API_BASE_URL}/api/divisions`);
 
-    const sortedDivisions = res.data.sort((a, b) => {
-      return (
-        divisionOrder.indexOf(a.nameBn) -
-        divisionOrder.indexOf(b.nameBn)
-      );
-    });
-
-    setDivisions(sortedDivisions);
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 const fetchGuideDistricts = async (divisionId, divisionName) => {
   try {
@@ -66,17 +51,31 @@ const fetchGuideDistricts = async (divisionId, divisionName) => {
   
   useEffect(() => {
   const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      closeMenu()
-      setGuideMenuOpen(false)
+    if (e.key === "Escape") {
+      closeMenu();
+      setGuideMenuOpen(false);
     }
-  }
+  };
 
-  document.addEventListener('keydown', handleKeyDown)
-  fetchDivisions()
+  const loadDivisions = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/divisions`);
 
-  return () => document.removeEventListener('keydown', handleKeyDown)
-}, [])
+      const sortedDivisions = res.data.sort((a, b) => {
+        return divisionOrder.indexOf(a.nameBn) - divisionOrder.indexOf(b.nameBn);
+      });
+
+      setDivisions(sortedDivisions);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  document.addEventListener("keydown", handleKeyDown);
+  loadDivisions();
+
+  return () => document.removeEventListener("keydown", handleKeyDown);
+}, []);
 
   return (
     <div>

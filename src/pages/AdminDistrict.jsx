@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import API_BASE_URL from "../config";
+
 function AdminDistrict() {
   const [divisions, setDivisions] = useState([]);
   const [formData, setFormData] = useState({
@@ -14,17 +15,17 @@ function AdminDistrict() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetchDivisions();
-  }, []);
+    const loadDivisions = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/divisions`);
+        setDivisions(res.data || []);
+      } catch (error) {
+        console.log("Division fetch error:", error);
+      }
+    };
 
-  const fetchDivisions = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/divisions`);
-      setDivisions(res.data);
-    } catch (error) {
-      console.log("Division fetch error:", error);
-    }
-  };
+    loadDivisions();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({

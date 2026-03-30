@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
+
 function EditDistrict() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,37 +19,37 @@ function EditDistrict() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetchDivisions();
-    fetchDistrict();
-  }, []);
-
-  const fetchDivisions = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/divisions`);
-      setDivisions(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchDistrict = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/districts`);
-      const found = res.data.find((item) => item._id === id);
-
-      if (found) {
-        setFormData({
-          divisionId: found.divisionId?._id || found.divisionId,
-          nameBn: found.nameBn,
-          slug: found.slug,
-          image: found.image,
-          shortDescription: found.shortDescription,
-        });
+    const loadDivisions = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/divisions`);
+        setDivisions(res.data || []);
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    };
+
+    const loadDistrict = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/districts`);
+        const found = res.data.find((item) => item._id === id);
+
+        if (found) {
+          setFormData({
+            divisionId: found.divisionId?._id || found.divisionId || "",
+            nameBn: found.nameBn || "",
+            slug: found.slug || "",
+            image: found.image || "",
+            shortDescription: found.shortDescription || "",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    loadDivisions();
+    loadDistrict();
+  }, [id]);
 
   const handleChange = (e) => {
     setFormData({
@@ -77,7 +78,9 @@ function EditDistrict() {
     <div style={{ minHeight: "100vh", background: "#f4f8f2", padding: "60px 15px" }}>
       <div className="container">
         <div className="bg-white shadow rounded p-4" style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <h2 className="mb-4 text-center" style={{ color: "#1D3815" }}>Edit District</h2>
+          <h2 className="mb-4 text-center" style={{ color: "#1D3815" }}>
+            Edit District
+          </h2>
 
           {message && <div className="alert alert-info">{message}</div>}
 
@@ -149,7 +152,7 @@ function EditDistrict() {
             </div>
 
             <div className="col-12 text-center">
-              <button className="btn btn-success rounded-pill px-4">
+              <button type="submit" className="btn btn-success rounded-pill px-4">
                 Update District
               </button>
             </div>

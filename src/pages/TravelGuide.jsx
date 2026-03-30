@@ -23,7 +23,8 @@ function TravelGuide() {
   const [searchDone, setSearchDone] = useState(false);
   const [activeDivisionName, setActiveDivisionName] = useState("");
   const [activePlace, setActivePlace] = useState(null);
-
+  
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const loadDivisions = async () => {
       try {
@@ -507,7 +508,7 @@ function TravelGuide() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-                <button className="guide-search-btn" onClick={handleSearch}>
+                <button type="button" className="guide-search-btn" onClick={handleSearch}>
                   খুঁজুন
                 </button>
               </div>
@@ -590,8 +591,7 @@ function TravelGuide() {
                   to={`/travel-guide/district/${district.slug}`}
                   className="guide-district-link"
                 >
-                  <i className="fa fa-map-marker-alt me-2"></i>
-                  {district.nameBn}
+                  <i className="fa fa-map-marker-alt me-2"></i> {district.nameBn}
                 </Link>
               ))}
             </div>
@@ -665,9 +665,7 @@ function TravelGuide() {
               <h2 className="premium-modal-title">
                 <i className="fa fa-map-marker-alt me-2"></i> {activePlace.title}
               </h2>
-              <p className="premium-modal-text">
-                {activePlace.fullDescription}
-              </p>
+              <p className="premium-modal-text">{activePlace.fullDescription}</p>
             </div>
           </div>
         </div>
