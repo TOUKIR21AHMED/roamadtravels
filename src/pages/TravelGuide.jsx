@@ -46,7 +46,7 @@ function TravelGuide() {
     };
 
     fetchDivisions();
-  }, []);
+  }, [divisionOrder]);
 
   const fetchDistricts = async (id, name) => {
     try {
