@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../config";
@@ -25,28 +25,27 @@ function TravelGuide() {
 
   useEffect(() => {
   fetchDivisions();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+}, [fetchDivisions]);
 
-  const fetchDivisions = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/divisions`);
+  const fetchDivisions = useCallback(async () => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/api/divisions`);
 
-      const sortedDivisions = [...res.data].sort((a, b) => {
-        const aIndex = divisionOrder.indexOf(a.nameBn);
-        const bIndex = divisionOrder.indexOf(b.nameBn);
+    const sortedDivisions = [...res.data].sort((a, b) => {
+      const aIndex = divisionOrder.indexOf(a.nameBn);
+      const bIndex = divisionOrder.indexOf(b.nameBn);
 
-        const safeA = aIndex === -1 ? 999 : aIndex;
-        const safeB = bIndex === -1 ? 999 : bIndex;
+      const safeA = aIndex === -1 ? 999 : aIndex;
+      const safeB = bIndex === -1 ? 999 : bIndex;
 
-        return safeA - safeB;
-      });
+      return safeA - safeB;
+    });
 
-      setDivisions(sortedDivisions);
-    } catch (error) {
-      console.log("Division fetch error:", error);
-    }
-  };
+    setDivisions(sortedDivisions);
+  } catch (error) {
+    console.log("Division fetch error:", error);
+  }
+}, [divisionOrder]);
 
   const fetchDistricts = async (id, name) => {
     try {
