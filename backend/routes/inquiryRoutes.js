@@ -18,10 +18,12 @@ router.post("/", async (req, res) => {
     user: process.env.SMTP_EMAIL,
     pass: process.env.SMTP_PASSWORD,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
+console.log("SMTP EMAIL:", process.env.SMTP_EMAIL);
+console.log("SMTP PASSWORD:", process.env.SMTP_PASSWORD ? "FOUND" : "MISSING");
 
         await transporter.sendMail({
           from: `"Roamad Travels" <${process.env.SMTP_EMAIL}>`,
