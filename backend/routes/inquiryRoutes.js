@@ -11,12 +11,17 @@ router.post("/", async (req, res) => {
     try {
       if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
         const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.SMTP_EMAIL,
-            pass: process.env.SMTP_PASSWORD,
-          },
-        });
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 
         await transporter.sendMail({
           from: `"Roamad Travels" <${process.env.SMTP_EMAIL}>`,
