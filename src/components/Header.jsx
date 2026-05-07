@@ -750,7 +750,7 @@ const fetchGuideDistricts = async (divisionId, divisionName) => {
       <div className="main-navbar">
         <Link to="/" className="navbar-brand-text">
           <img src="/assets/img/logo.png" alt="logo" className="nav-logo1" />
-          <img src="/assets/img/logo2.png" alt="logo text" className="nav-logo2" />
+          {/* <img src="/assets/img/logo2.png" alt="logo text" className="nav-logo2" /> */}
         </Link>
 
         <div className="main-nav-menu">
@@ -865,7 +865,7 @@ const fetchGuideDistricts = async (divisionId, divisionName) => {
         <div className="sidebar-header">
           <Link to="/" className="sidebar-brand" onClick={closeMenu}>
             <img src="/assets/img/logo.png" alt="ROAMAD Logo" className="brand-logo" />
-            <img src="/assets/img/logo2.png" alt="ROAMAD Travels BD" className="brand-text-logo" />
+            {/* <img src="/assets/img/logo2.png" alt="ROAMAD Travels BD" className="brand-text-logo" /> */}
           </Link>
 
           <button className="sidebar-close-btn" onClick={closeMenu}>

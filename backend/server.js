@@ -11,6 +11,7 @@ const productCategoryRoutes = require("./routes/productCategoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const shopBannerRoutes = require("./routes/shopBannerRoutes");
+const adminAuthRoutes = require("./routes/adminAuthRoutes");
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/api/product-categories", productCategoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/shop-banners", shopBannerRoutes);
+app.use("/api/admin-auth", adminAuthRoutes);
 
 app.get("/", (req, res) => {
   res.send("Travel Guide API running 🚀");
