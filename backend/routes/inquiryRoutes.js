@@ -11,7 +11,7 @@ router.post("/", async (req, res) => {
     try {
       if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
         const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: "smtp-relay.brevo.com",
   port: 587,
   secure: false,
   auth: {
