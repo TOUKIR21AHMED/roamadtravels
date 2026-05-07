@@ -48,6 +48,9 @@ import ManageShopBanners from "./pages/ManageShopBanners";
 import EditShopBanner from "./pages/EditShopBanner";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import Visa from "./pages/Visa";
+import Flight from "./pages/Flight";
+
 // NEW IMPORTS
 import AdminLogin from "./pages/AdminLogin";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
@@ -100,7 +103,8 @@ export default function App() {
   }
 />
 
-
+<Route path="/visa" element={<Visa />} />
+<Route path="/flight" element={<Flight />} />
 
         {/* ADMIN LOGIN */}
 
