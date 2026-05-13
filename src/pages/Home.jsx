@@ -1,5 +1,28 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
+import API_BASE_URL from "../config";
+
 
 export default function Home() {
+
+  const [randomPlaces, setRandomPlaces] = useState([]);
+const [activePlace, setActivePlace] = useState(null);
+
+useEffect(() => {
+  const fetchRandomPlaces = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/places`);
+      const places = res.data || [];
+
+      const shuffled = [...places].sort(() => 0.5 - Math.random());
+      setRandomPlaces(shuffled.slice(0, 9));
+    } catch (error) {
+      console.log("Random places fetch error:", error);
+    }
+  };
+
+  fetchRandomPlaces();
+}, []);
   return (
     <div>
       <div className="container-fluid bg-primary py-5 mb-5 hero-header">
@@ -111,6 +134,232 @@ export default function Home() {
       </div>
     </div>
     {/* About End */}
+
+    {/* Random Tourist Places Start */}
+<style>{`
+  .home-place-card {
+    background: #ffffff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    height: 100%;
+    transition: 0.25s ease;
+  }
+
+  .home-place-card:hover {
+    transform: translateY(-6px);
+  }
+
+  .home-place-img-wrap {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+  }
+
+  .home-place-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .home-place-location {
+    position: absolute;
+    left: 16px;
+    bottom: 14px;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.55);
+  }
+
+  .home-place-body {
+    padding: 20px;
+  }
+
+  .home-place-title {
+    color: #1D3815;
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  .home-place-text {
+    color: #4f5a4a;
+    line-height: 1.7;
+    margin-bottom: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .home-place-btn {
+    border: none;
+    background: #277f0d;
+    color: white;
+    border-radius: 999px;
+    padding: 9px 20px;
+    font-weight: 700;
+  }
+
+  .home-place-btn:hover {
+    background: #1d5c09;
+  }
+
+  .home-place-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(7, 17, 8, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .home-place-modal {
+    width: 100%;
+    max-width: 850px;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 26px;
+    overflow: hidden;
+  }
+
+  .home-place-modal-img {
+    width: 100%;
+    height: 380px;
+    object-fit: cover;
+  }
+
+  .home-place-modal-content {
+    padding: 26px;
+  }
+
+  .home-place-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  @media (max-width: 576px) {
+    .home-place-img-wrap {
+      height: 150px;
+    }
+
+    .home-place-body {
+      padding: 14px;
+    }
+
+    .home-place-title {
+      font-size: 1rem;
+    }
+
+    .home-place-text {
+      font-size: 0.88rem;
+      -webkit-line-clamp: 3;
+    }
+
+    .home-place-modal-img {
+      height: 230px;
+    }
+  }
+`}</style>
+
+<div className="container-xxl py-5">
+  <div className="container">
+    <div className="text-center wow fadeInUp" data-wow-delay="0.1s">
+      <h6 className="section-title bg-white text-center text-primary px-3">
+        Travel Guide
+      </h6>
+      <h1 className="mb-5">বাংলাদেশের দর্শনীয় স্থান</h1>
+    </div>
+
+    <div className="row g-4">
+      {randomPlaces.map((place) => (
+        <div className="col-lg-4 col-6" key={place._id}>
+          <div className="home-place-card">
+            <div className="home-place-img-wrap">
+              <img
+                src={place.image}
+                alt={place.nameBn}
+                className="home-place-img"
+              />
+              <div className="home-place-location">
+                <i className="fa fa-map-marker-alt me-2"></i>
+                {place.districtId?.nameBn || place.districtName || "বাংলাদেশ"}
+              </div>
+            </div>
+
+            <div className="home-place-body">
+              <h5 className="home-place-title">{place.nameBn}</h5>
+              <p className="home-place-text">
+                {place.shortDescription || place.description}
+              </p>
+
+              <button
+                type="button"
+                className="home-place-btn"
+                onClick={() => setActivePlace(place)}
+              >
+                বিস্তারিত
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+{activePlace && (
+  <div
+    className="home-place-modal-overlay"
+    onClick={() => setActivePlace(null)}
+  >
+    <div
+      className="home-place-modal position-relative"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        className="home-place-modal-close"
+        onClick={() => setActivePlace(null)}
+      >
+        ✕
+      </button>
+
+      <img
+        src={activePlace.image}
+        alt={activePlace.nameBn}
+        className="home-place-modal-img"
+      />
+
+      <div className="home-place-modal-content">
+        <h2 className="home-place-title">
+          <i className="fa fa-map-marker-alt me-2"></i>
+          {activePlace.nameBn}
+        </h2>
+
+        <p className="home-place-text" style={{ display: "block" }}>
+          {activePlace.fullDescription ||
+            activePlace.description ||
+            activePlace.shortDescription}
+        </p>
+      </div>
+    </div>
+  </div>
+)}
+{/* Random Tourist Places End */}
     {/* Service Start */}
     <div className="container-xxl py-5">
       <div className="container">

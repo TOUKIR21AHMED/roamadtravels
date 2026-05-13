@@ -13,6 +13,9 @@ const orderRoutes = require("./routes/orderRoutes");
 const shopBannerRoutes = require("./routes/shopBannerRoutes");
 const adminAuthRoutes = require("./routes/adminAuthRoutes");
 const inquiryRoutes = require("./routes/inquiryRoutes");
+const eventPackageRoutes = require("./routes/eventPackageRoutes");
+const eventRequestRoutes = require("./routes/eventRequestRoutes");
+
 const app = express();
 
 // ✅ PORT fix (IMPORTANT)
@@ -45,6 +48,8 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/shop-banners", shopBannerRoutes);
 app.use("/api/admin-auth", adminAuthRoutes);
 app.use("/api/inquiries", inquiryRoutes);
+app.use("/api/event-packages", eventPackageRoutes);
+app.use("/api/event-requests", eventRequestRoutes);
 
 app.get("/", (req, res) => {
   res.send("Travel Guide API running 🚀");

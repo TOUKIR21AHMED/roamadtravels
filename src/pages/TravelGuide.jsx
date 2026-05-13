@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../config";
 
@@ -23,8 +23,9 @@ function TravelGuide() {
   const [searchDone, setSearchDone] = useState(false);
   const [activeDivisionName, setActiveDivisionName] = useState("");
   const [activePlace, setActivePlace] = useState(null);
-  
-// eslint-disable-next-line react-hooks/exhaustive-deps
+
+  const districtPanelRef = useRef(null);
+
   useEffect(() => {
     const loadDivisions = async () => {
       try {
@@ -58,8 +59,18 @@ function TravelGuide() {
       const res = await axios.get(
         `${API_BASE_URL}/api/districts/by-division/${id}`
       );
+
       setDistricts(res.data || []);
       setActiveDivisionName(name);
+
+      setTimeout(() => {
+        if (window.innerWidth <= 768 && districtPanelRef.current) {
+          districtPanelRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      }, 200);
     } catch (error) {
       console.log("District fetch error:", error);
     }
@@ -89,8 +100,7 @@ function TravelGuide() {
     {
       id: 1,
       title: "সাজেক ভ্যালি",
-      image:
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+      image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
       text: "বাংলাদেশের অন্যতম জনপ্রিয় পাহাড়ি পর্যটন কেন্দ্র।",
       fullDescription:
         "সাজেক ভ্যালি বাংলাদেশের অন্যতম জনপ্রিয় পাহাড়ি ভ্রমণ স্থান। মেঘের খেলা, পাহাড়ি রাস্তা, শান্ত পরিবেশ এবং প্রাকৃতিক সৌন্দর্যের জন্য এটি পর্যটকদের কাছে খুবই আকর্ষণীয়। রাঙামাটি জেলার অন্তর্গত এই স্থানটি পরিবার, বন্ধু বা দম্পতিদের জন্য অসাধারণ একটি ভ্রমণ গন্তব্য।",
@@ -98,8 +108,7 @@ function TravelGuide() {
     {
       id: 2,
       title: "সেন্ট মার্টিন",
-      image:
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
       text: "বাংলাদেশের একমাত্র প্রবাল দ্বীপ, অপরূপ সৌন্দর্যে ভরা।",
       fullDescription:
         "সেন্ট মার্টিন বাংলাদেশের একমাত্র প্রবাল দ্বীপ এবং সমুদ্রপ্রেমীদের জন্য স্বর্গের মতো একটি জায়গা। নীল পানি, সাদা বালু, প্রবালের বৈচিত্র্য এবং শান্ত পরিবেশ এই দ্বীপকে বিশেষভাবে অনন্য করেছে। যারা সমুদ্রের পাশে নিরিবিলি সময় কাটাতে চান, তাদের জন্য এটি দারুণ একটি destination।",
@@ -107,8 +116,7 @@ function TravelGuide() {
     {
       id: 3,
       title: "রাঙ্গামাটি",
-      image:
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+      image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
       text: "কাপ্তাই লেক আর পাহাড়ি সৌন্দর্যের এক অনন্য মিশ্রণ।",
       fullDescription:
         "রাঙ্গামাটি বাংলাদেশের অন্যতম সুন্দর পাহাড়ি জেলা, যা কাপ্তাই লেকের জন্য বিশেষভাবে বিখ্যাত। এখানে নীল জল, পাহাড়, সবুজ গাছপালা ও নৌভ্রমণের অভিজ্ঞতা মিলিয়ে চমৎকার একটি পরিবেশ পাওয়া যায়। প্রকৃতি ভালোবাসেন এমন সবার জন্য রাঙ্গামাটি দারুণ একটি পর্যটন কেন্দ্র।",
@@ -116,8 +124,7 @@ function TravelGuide() {
     {
       id: 4,
       title: "সুন্দরবন",
-      image:
-        "https://images.unsplash.com/photo-1470770903676-69b98201ea1c",
+      image: "https://images.unsplash.com/photo-1470770903676-69b98201ea1c",
       text: "বিশ্বের বৃহত্তম ম্যানগ্রোভ বন ও রয়েল বেঙ্গল টাইগারের আবাস।",
       fullDescription:
         "সুন্দরবন বিশ্বের সবচেয়ে বড় ম্যানগ্রোভ বন এবং বাংলাদেশে প্রকৃতিপ্রেমীদের জন্য একটি অসাধারণ স্থান। এটি রয়েল বেঙ্গল টাইগার, হরিণ, কুমির এবং নানা প্রজাতির পাখির আবাসস্থল। নদী, খাল, বন ও বন্যপ্রাণীর সমন্বয়ে এটি এক অনন্য প্রাকৃতিক ঐতিহ্য।",
@@ -125,8 +132,7 @@ function TravelGuide() {
     {
       id: 5,
       title: "কুয়াকাটা",
-      image:
-        "https://images.unsplash.com/photo-1493558103817-58b2924bce98",
+      image: "https://images.unsplash.com/photo-1493558103817-58b2924bce98",
       text: "এক জায়গা থেকে সূর্যোদয় আর সূর্যাস্ত দেখার জন্য বিখ্যাত।",
       fullDescription:
         "কুয়াকাটা বাংলাদেশের এমন একটি সমুদ্র সৈকত, যেখানে একই জায়গা থেকে সূর্যোদয় ও সূর্যাস্ত দেখা যায়। সমুদ্র, ঝাউবন, শান্ত পরিবেশ এবং বিস্তীর্ণ সৈকত এটিকে একটি বিশেষ পর্যটন গন্তব্যে পরিণত করেছে। প্রকৃতির সৌন্দর্য উপভোগ করতে চাইলে কুয়াকাটা অবশ্যই দেখার মতো।",
@@ -134,8 +140,7 @@ function TravelGuide() {
     {
       id: 6,
       title: "শ্রীমঙ্গল",
-      image:
-        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
+      image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
       text: "চায়ের রাজধানী, সবুজ প্রকৃতি আর শান্ত পরিবেশে ভরা।",
       fullDescription:
         "শ্রীমঙ্গলকে বাংলাদেশের চায়ের রাজধানী বলা হয়। অসংখ্য চা বাগান, সবুজ প্রাকৃতিক পরিবেশ, লাউয়াছড়া জাতীয় উদ্যান এবং শান্ত আবহাওয়া এই অঞ্চলকে ভ্রমণের জন্য অনন্য করে তুলেছে। যারা নিরিবিলি প্রকৃতি ও সবুজের মাঝে সময় কাটাতে চান, তাদের জন্য শ্রীমঙ্গল একদম perfect।",
@@ -261,6 +266,7 @@ function TravelGuide() {
           border-radius: 22px;
           box-shadow: 0 14px 35px rgba(0,0,0,0.06);
           padding: 28px;
+          scroll-margin-top: 90px;
         }
 
         .district-panel-title {
@@ -455,7 +461,7 @@ function TravelGuide() {
 
         @keyframes modalSlideUp {
           from {
-            opacity: 0;
+            opacity: 1;
             transform: translateY(30px) scale(0.96);
           }
           to {
@@ -475,6 +481,10 @@ function TravelGuide() {
 
           .guide-search-btn {
             width: 100%;
+          }
+
+          .district-panel {
+            scroll-margin-top: 80px;
           }
 
           .premium-modal-img {
@@ -508,7 +518,11 @@ function TravelGuide() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-                <button type="button" className="guide-search-btn" onClick={handleSearch}>
+                <button
+                  type="button"
+                  className="guide-search-btn"
+                  onClick={handleSearch}
+                >
                   খুঁজুন
                 </button>
               </div>
@@ -540,7 +554,9 @@ function TravelGuide() {
                         </p>
 
                         <Link
-                          to={`/travel-guide/district/${place.districtId?.slug || ""}`}
+                          to={`/travel-guide/district/${
+                            place.districtId?.slug || ""
+                          }`}
                           className="guide-link-btn"
                         >
                           বিস্তারিত দেখুন
@@ -579,7 +595,7 @@ function TravelGuide() {
         </div>
 
         {districts.length > 0 && (
-          <div className="district-panel">
+          <div className="district-panel" ref={districtPanelRef}>
             <h3 className="district-panel-title">
               {activeDivisionName} বিভাগের জেলা সমূহ
             </h3>
@@ -591,7 +607,8 @@ function TravelGuide() {
                   to={`/travel-guide/district/${district.slug}`}
                   className="guide-district-link"
                 >
-                  <i className="fa fa-map-marker-alt me-2"></i> {district.nameBn}
+                  <i className="fa fa-map-marker-alt me-2"></i>{" "}
+                  {district.nameBn}
                 </Link>
               ))}
             </div>
@@ -663,9 +680,12 @@ function TravelGuide() {
                 বাংলাদেশের জনপ্রিয় ভ্রমণ স্থান
               </div>
               <h2 className="premium-modal-title">
-                <i className="fa fa-map-marker-alt me-2"></i> {activePlace.title}
+                <i className="fa fa-map-marker-alt me-2"></i>{" "}
+                {activePlace.title}
               </h2>
-              <p className="premium-modal-text">{activePlace.fullDescription}</p>
+              <p className="premium-modal-text">
+                {activePlace.fullDescription}
+              </p>
             </div>
           </div>
         </div>

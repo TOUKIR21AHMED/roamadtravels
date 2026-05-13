@@ -59,6 +59,12 @@ import TourismAdminDashboard from "./pages/TourismAdminDashboard";
 import CreateAdmin from "./pages/CreateAdmin";
 import ManageAdmins from "./pages/ManageAdmins";
 import EditAdmin from "./pages/EditAdmin";
+import CreateEventPackage from "./pages/CreateEventPackage";
+import ManageEventPackages from "./pages/ManageEventPackages";
+import EditEventPackage from "./pages/EditEventPackage";
+import EventPackageDetails from "./pages/EventPackageDetails";
+import EventPackageRequest from "./pages/EventPackageRequest";
+import ManageEventRequests from "./pages/ManageEventRequests";
 
 export default function App() {
 
@@ -113,8 +119,12 @@ export default function App() {
           element={<AdminLogin />}
         />
 
-
-
+<Route path="/admin/create-event-package" element={<CreateEventPackage />} />
+<Route path="/admin/manage-event-packages" element={<ManageEventPackages />} />
+<Route path="/admin/edit-event-package/:id" element={<EditEventPackage />} />
+<Route path="/events-packages/:slug" element={<EventPackageDetails />} />
+<Route path="/event-package-request" element={<EventPackageRequest />} />
+<Route path="/admin/manage-event-requests" element={<ManageEventRequests />} />
         {/* SUPER ADMIN */}
 
         <Route

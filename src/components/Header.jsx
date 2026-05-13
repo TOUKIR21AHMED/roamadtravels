@@ -825,7 +825,7 @@ const fetchGuideDistricts = async (divisionId, divisionName) => {
           </Link>
 
           <Link to="/Packages">
-            <FaSuitcaseRolling className="nav-icon" /> Packages
+            <FaSuitcaseRolling className="nav-icon" /> Events & Packages
           </Link>
 
           <MainPagesDropdown />
@@ -899,7 +899,7 @@ const fetchGuideDistricts = async (divisionId, divisionName) => {
           </Link>
 
           <Link to="/Packages" onClick={closeMenu}>
-            <FaSuitcaseRolling className="nav-icon"/> Packages
+            <FaSuitcaseRolling className="nav-icon"/> Events & Packages
           </Link>
 
           <PagesDropdown closeMenu={closeMenu} />

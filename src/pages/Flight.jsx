@@ -67,7 +67,7 @@ function Flight() {
           zIndex: 999,
         }}
       >
-        ☎
+        <i className="fab fa-whatsapp"></i>
       </a>
 
       <div className="container">
