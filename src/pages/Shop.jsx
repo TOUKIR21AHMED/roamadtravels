@@ -21,7 +21,13 @@ const ProductSkeleton = () => {
     </div>
   );
 };
+const getImageUrl = (img) => {
+  if (!img) return "";
 
+  return img.startsWith("http")
+    ? img
+    : `${API_BASE_URL}${img}`;
+};
 const Shop = () => {
   const [wishlist, setWishlist] = useState(() => {
   const saved = localStorage.getItem("shop_wishlist");
@@ -219,7 +225,7 @@ const addToCart = (product) => {
           {banners.length > 0 ? (
             <>
               <img
-                src={banners[currentBanner]?.image}
+                src={getImageUrl(banners[currentBanner]?.image)}
                 alt={banners[currentBanner]?.title || "Shop Banner"}
                 className="w-100 shop-carousel-image"
               />
@@ -373,7 +379,7 @@ const addToCart = (product) => {
                     onClick={() => setActiveProduct(product)}
                   >
                     <img
-                      src={product.image}
+                      src={getImageUrl(product.image)}
                       alt={product.name}
                       className="shop-product-image"
                     />
@@ -486,7 +492,7 @@ const addToCart = (product) => {
             <div className="row g-4 align-items-center">
               <div className="col-lg-6">
                 <img
-                  src={activeProduct.image}
+                  src={getImageUrl(activeProduct.image)}
                   alt={activeProduct.name}
                   className="shop-modal-image"
                 />

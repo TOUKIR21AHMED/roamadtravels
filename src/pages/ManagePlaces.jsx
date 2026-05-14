@@ -47,7 +47,11 @@ function ManagePlaces() {
             <div className="col-lg-4 col-md-6 mb-4" key={place._id}>
               <div className="card h-100 shadow-sm">
                 <img
-                  src={place.image}
+                  src={
+  place.image?.startsWith("http")
+    ? place.image
+    : `${API_BASE_URL}${place.image}`
+}
                   alt={place.nameBn}
                   className="card-img-top"
                   style={{ height: "220px", objectFit: "cover" }}

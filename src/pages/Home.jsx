@@ -1,12 +1,17 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API_BASE_URL from "../config";
 
 
 export default function Home() {
-
+const [homePackages, setHomePackages] = useState([]);
   const [randomPlaces, setRandomPlaces] = useState([]);
 const [activePlace, setActivePlace] = useState(null);
+const getImageUrl = (img) => {
+  if (!img) return "";
+  return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
+};
 
 useEffect(() => {
   const fetchRandomPlaces = async () => {
@@ -22,6 +27,24 @@ useEffect(() => {
   };
 
   fetchRandomPlaces();
+}, []);
+useEffect(() => {
+  const fetchHomePackages = async () => {
+    try {
+      const res = await axios.get(
+        `${API_BASE_URL}/api/event-packages?published=true&limit=50`
+      );
+
+      const packages = res.data.items || [];
+      const shuffled = [...packages].sort(() => 0.5 - Math.random());
+
+      setHomePackages(shuffled.slice(0, 3));
+    } catch (error) {
+      console.log("Home packages fetch error:", error);
+    }
+  };
+
+  fetchHomePackages();
 }, []);
   return (
     <div>
@@ -360,486 +383,382 @@ useEffect(() => {
   </div>
 )}
 {/* Random Tourist Places End */}
-    {/* Service Start */}
-    <div className="container-xxl py-5">
-      <div className="container">
-        <div className="text-center wow fadeInUp" data-wow-delay="0.1s">
-          <h6 className="section-title bg-white text-center text-primary px-3">
-            Services
-          </h6>
-          <h1 className="mb-5">Our Services</h1>
-        </div>
-        <div className="row g-4">
-          <div className="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.1s">
-            <div className="service-item rounded pt-3">
-              <div className="p-4">
-                <i className="fa fa-3x fa-globe text-primary mb-4" />
-                <h5>WorldWide Tours</h5>
-                <p>
-                  Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita
-                  amet diam
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.3s">
-            <div className="service-item rounded pt-3">
-              <div className="p-4">
-                <i className="fa fa-3x fa-hotel text-primary mb-4" />
-                <h5>Hotel Reservation</h5>
-                <p>
-                  Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita
-                  amet diam
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.5s">
-            <div className="service-item rounded pt-3">
-              <div className="p-4">
-                <i className="fa fa-3x fa-user text-primary mb-4" />
-                <h5>Travel Guides</h5>
-                <p>
-                  Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita
-                  amet diam
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.7s">
-            <div className="service-item rounded pt-3">
-              <div className="p-4">
-                <i className="fa fa-3x fa-cog text-primary mb-4" />
-                <h5>Event Management</h5>
-                <p>
-                  Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita
-                  amet diam
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.1s">
-            <div className="service-item rounded pt-3">
-              <div className="p-4">
-                <i className="fa fa-3x fa-globe text-primary mb-4" />
-                <h5>WorldWide Tours</h5>
-                <p>
-                  Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita
-                  amet diam
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.3s">
-            <div className="service-item rounded pt-3">
-              <div className="p-4">
-                <i className="fa fa-3x fa-hotel text-primary mb-4" />
-                <h5>Hotel Reservation</h5>
-                <p>
-                  Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita
-                  amet diam
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.5s">
-            <div className="service-item rounded pt-3">
-              <div className="p-4">
-                <i className="fa fa-3x fa-user text-primary mb-4" />
-                <h5>Travel Guides</h5>
-                <p>
-                  Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita
-                  amet diam
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.7s">
-            <div className="service-item rounded pt-3">
-              <div className="p-4">
-                <i className="fa fa-3x fa-cog text-primary mb-4" />
-                <h5>Event Management</h5>
-                <p>
-                  Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita
-                  amet diam
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+{/* Service Start */}
+<style>{`
+  .home-service-card {
+    position: relative;
+    height: 100%;
+    padding: 28px;
+    border-radius: 26px;
+    background: #ffffff;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.08);
+    border: 1px solid rgba(39,127,13,0.12);
+    overflow: hidden;
+    transition: 0.35s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .home-service-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 28px 70px rgba(29,56,21,0.16);
+    color: inherit;
+  }
+
+  .home-service-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #1D3815, #277f0d);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin-bottom: 22px;
+    box-shadow: 0 16px 34px rgba(39,127,13,0.28);
+    transition: 0.35s ease;
+  }
+
+  .home-service-card:hover .home-service-icon {
+    transform: rotate(-8deg) scale(1.08);
+  }
+
+  .home-service-tag {
+    display: inline-block;
+    background: #eef8ea;
+    color: #277f0d;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 900;
+    margin-bottom: 14px;
+  }
+
+  .home-service-title {
+    color: #1D3815;
+    font-weight: 900;
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+  }
+
+  .home-service-text {
+    color: #5a6655;
+    line-height: 1.7;
+    margin-bottom: 18px;
+  }
+
+  .home-service-arrow {
+    color: #277f0d;
+    font-weight: 900;
+  }
+`}</style>
+
+<div className="container-xxl py-5">
+  <div className="container">
+    <div className="text-center wow fadeInUp" data-wow-delay="0.1s">
+      <h6 className="section-title bg-white text-center text-primary px-3">
+        Services
+      </h6>
+      <h1 className="mb-5">Our Services</h1>
     </div>
-    {/* Service End */}
-    {/* Destination Start */}
-    <div className="container-xxl py-5 destination">
-      <div className="container">
-        <div className="text-center wow fadeInUp" data-wow-delay="0.1s">
-          <h6 className="section-title bg-white text-center text-primary px-3">
-            Destination
-          </h6>
-          <h1 className="mb-5">Popular Destination</h1>
-        </div>
-        <div className="row g-3">
-          <div className="col-lg-7 col-md-6">
-            <div className="row g-3">
-              <div
-                className="col-lg-12 col-md-12 wow zoomIn"
-                data-wow-delay="0.1s"
-              >
-                <a
-                  className="position-relative d-block overflow-hidden"
-                  href=""
-                >
-                  <img
-                    className="img-fluid"
-                    src="assets/img/destination-1.jpg"
-                    alt=""
-                  />
-                  <div className="bg-white text-danger fw-bold position-absolute top-0 start-0 m-3 py-1 px-2">
-                    30% OFF
-                  </div>
-                  <div className="bg-white text-primary fw-bold position-absolute bottom-0 end-0 m-3 py-1 px-2">
-                    Thailand
-                  </div>
-                </a>
-              </div>
-              <div
-                className="col-lg-6 col-md-12 wow zoomIn"
-                data-wow-delay="0.3s"
-              >
-                <a
-                  className="position-relative d-block overflow-hidden"
-                  href=""
-                >
-                  <img
-                    className="img-fluid"
-                    src="assets/img/destination-2.jpg"
-                    alt=""
-                  />
-                  <div className="bg-white text-danger fw-bold position-absolute top-0 start-0 m-3 py-1 px-2">
-                    25% OFF
-                  </div>
-                  <div className="bg-white text-primary fw-bold position-absolute bottom-0 end-0 m-3 py-1 px-2">
-                    Malaysia
-                  </div>
-                </a>
-              </div>
-              <div
-                className="col-lg-6 col-md-12 wow zoomIn"
-                data-wow-delay="0.5s"
-              >
-                <a
-                  className="position-relative d-block overflow-hidden"
-                  href=""
-                >
-                  <img
-                    className="img-fluid"
-                    src="assets/img/destination-3.jpg"
-                    alt=""
-                  />
-                  <div className="bg-white text-danger fw-bold position-absolute top-0 start-0 m-3 py-1 px-2">
-                    35% OFF
-                  </div>
-                  <div className="bg-white text-primary fw-bold position-absolute bottom-0 end-0 m-3 py-1 px-2">
-                    Australia
-                  </div>
-                </a>
-              </div>
+
+    <div className="row g-4">
+      {[
+        {
+          title: "Flight",
+          link: "/Flight",
+          icon: "fa-plane",
+          tag: "Air Travel",
+          desc: "Book domestic and international flights with trusted travel support.",
+        },
+        {
+          title: "Visa",
+          link: "/Visa",
+          icon: "fa-passport",
+          tag: "Documentation",
+          desc: "Get visa assistance, document guidance and professional support.",
+        },
+        {
+          title: "Events & Packages",
+          link: "/Packages",
+          icon: "fa-suitcase",
+          tag: "Packages",
+          desc: "Explore premium events, tours, activities and travel packages.",
+        },
+        {
+          title: "Creating Personal Event",
+          link: "/event-package-request",
+          icon: "fa-calendar-plus",
+          tag: "Custom Event",
+          desc: "Create your own private tour, group trip or custom event plan.",
+        },
+        {
+          title: "Travel Guide & Information",
+          link: "/travel-guide",
+          icon: "fa-map-marked-alt",
+          tag: "Guide",
+          desc: "Discover tourist spots, local information and travel tips.",
+        },
+        {
+          title: "Our E-commerce Shop",
+          link: "/Shop",
+          icon: "fa-shopping-cart",
+          tag: "Shop",
+          desc: "Buy travel essentials and useful products from our online shop.",
+        },
+      ].map((service, index) => (
+        <div
+          className="col-lg-4 col-md-6 wow fadeInUp"
+          data-wow-delay={`${0.1 + index * 0.12}s`}
+          key={service.title}
+        >
+          <a href={service.link} className="home-service-card">
+            <div className="home-service-icon">
+              <i className={`fa ${service.icon}`}></i>
             </div>
-          </div>
-          <div
-            className="col-lg-5 col-md-6 wow zoomIn"
-            data-wow-delay="0.7s"
-            style={{ minHeight: 350 }}
-          >
-            <a
-              className="position-relative d-block h-100 overflow-hidden"
-              href=""
-            >
-              <img
-                className="img-fluid position-absolute w-100 h-100"
-                src="assets/img/destination-4.jpg"
-                alt=""
-                style={{ objectFit: "cover" }}
-              />
-              <div className="bg-white text-danger fw-bold position-absolute top-0 start-0 m-3 py-1 px-2">
-                20% OFF
-              </div>
-              <div className="bg-white text-primary fw-bold position-absolute bottom-0 end-0 m-3 py-1 px-2">
-                Indonesia
-              </div>
-            </a>
-          </div>
+
+            <span className="home-service-tag">{service.tag}</span>
+
+            <h5 className="home-service-title">{service.title}</h5>
+
+            <p className="home-service-text">{service.desc}</p>
+
+            <span className="home-service-arrow">
+              Explore <i className="fa fa-arrow-right ms-1"></i>
+            </span>
+          </a>
         </div>
-      </div>
+      ))}
     </div>
-    {/* Destination Start */}
+  </div>
+</div>
+{/* Service End */}
+   
     {/* Package Start */}
-    <div className="container-xxl py-5">
-      <div className="container">
-        <div className="text-center wow fadeInUp" data-wow-delay="0.1s">
-          <h6 className="section-title bg-white text-center text-primary px-3">
-            Packages
-          </h6>
-          <h1 className="mb-5">Awesome Packages</h1>
-        </div>
-        <div className="row g-4 justify-content-center">
-          <div className="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-            <div className="package-item">
-              <div className="overflow-hidden">
-                <img className="img-fluid" src="assets/img/package-1.jpg" alt="" />
-              </div>
-              <div className="d-flex border-bottom">
-                <small className="flex-fill text-center border-end py-2">
-                  <i className="fa fa-map-marker-alt text-primary me-2" />
-                  Thailand
-                </small>
-                <small className="flex-fill text-center border-end py-2">
-                  <i className="fa fa-calendar-alt text-primary me-2" />3 days
-                </small>
-                <small className="flex-fill text-center py-2">
-                  <i className="fa fa-user text-primary me-2" />2 Person
-                </small>
-              </div>
-              <div className="text-center p-4">
-                <h3 className="mb-0">$149.00</h3>
-                <div className="mb-3">
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                </div>
-                <p>
-                  Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit
-                  diam amet diam eos
-                </p>
-                <div className="d-flex justify-content-center mb-2">
-                  <a
-                    href="javascript:void(0)"
-                    className="btn btn-sm btn-primary px-3 border-end"
-                    style={{ borderRadius: "30px 0 0 30px" }}
-                  >
-                    Read More
-                  </a>
-                  <a
-                    href="javascript:void(0)"
-                    className="btn btn-sm btn-primary px-3"
-                    style={{ borderRadius: "0 30px 30px 0" }}
-                  >
-                    Book Now
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
-            <div className="package-item">
-              <div className="overflow-hidden">
-                <img className="img-fluid" src="assets/img/package-2.jpg" alt="" />
-              </div>
-              <div className="d-flex border-bottom">
-                <small className="flex-fill text-center border-end py-2">
-                  <i className="fa fa-map-marker-alt text-primary me-2" />
-                  Indonesia
-                </small>
-                <small className="flex-fill text-center border-end py-2">
-                  <i className="fa fa-calendar-alt text-primary me-2" />3 days
-                </small>
-                <small className="flex-fill text-center py-2">
-                  <i className="fa fa-user text-primary me-2" />2 Person
-                </small>
-              </div>
-              <div className="text-center p-4">
-                <h3 className="mb-0">$139.00</h3>
-                <div className="mb-3">
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                </div>
-                <p>
-                  Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit
-                  diam amet diam eos
-                </p>
-                <div className="d-flex justify-content-center mb-2">
-                  <a
-                    href="javascript:void(0)"
-                    className="btn btn-sm btn-primary px-3 border-end"
-                    style={{ borderRadius: "30px 0 0 30px" }}
-                  >
-                    Read More
-                  </a>
-                  <a
-                    href="javascript:void(0)"
-                    className="btn btn-sm btn-primary px-3"
-                    style={{ borderRadius: "0 30px 30px 0" }}
-                  >
-                    Book Now
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.5s">
-            <div className="package-item">
-              <div className="overflow-hidden">
-                <img className="img-fluid" src="assets/img/package-3.jpg" alt="" />
-              </div>
-              <div className="d-flex border-bottom">
-                <small className="flex-fill text-center border-end py-2">
-                  <i className="fa fa-map-marker-alt text-primary me-2" />
-                  Malaysia
-                </small>
-                <small className="flex-fill text-center border-end py-2">
-                  <i className="fa fa-calendar-alt text-primary me-2" />3 days
-                </small>
-                <small className="flex-fill text-center py-2">
-                  <i className="fa fa-user text-primary me-2" />2 Person
-                </small>
-              </div>
-              <div className="text-center p-4">
-                <h3 className="mb-0">$189.00</h3>
-                <div className="mb-3">
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                  <small className="fa fa-star text-primary" />
-                </div>
-                <p>
-                  Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit
-                  diam amet diam eos
-                </p>
-                <div className="d-flex justify-content-center mb-2">
-                  <a
-                    href="javascript:void(0)"
-                    className="btn btn-sm btn-primary px-3 border-end"
-                    style={{ borderRadius: "30px 0 0 30px" }}
-                  >
-                    Read More
-                  </a>
-                  <a
-                    href="javascript:void(0)"
-                    className="btn btn-sm btn-primary px-3"
-                    style={{ borderRadius: "0 30px 30px 0" }}
-                  >
-                    Book Now
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+<style>{`
+  .home-package-section {
+    background: linear-gradient(180deg, #ffffff 0%, #f4f8f2 100%);
+  }
+
+  .home-package-card {
+    background: white;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.09);
+    height: 100%;
+    transition: 0.35s ease;
+    position: relative;
+  }
+
+  .home-package-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 65px rgba(0,0,0,0.15);
+  }
+
+  .home-package-img-wrap {
+    height: 255px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .home-package-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.45s ease;
+  }
+
+  .home-package-card:hover .home-package-img {
+    transform: scale(1.1);
+  }
+
+  .home-package-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(255,255,255,0.94);
+    color: #277f0d;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 900;
+  }
+
+  .home-package-price {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: #277f0d;
+    color: white;
+    padding: 9px 15px;
+    border-radius: 999px;
+    font-weight: 900;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+  }
+
+  .home-package-body {
+    padding: 24px;
+  }
+
+  .home-package-title {
+    color: #1D3815;
+    font-weight: 950;
+    font-size: 1.18rem;
+    min-height: 58px;
+    margin-bottom: 12px;
+  }
+
+  .home-package-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .home-package-meta span {
+    background: #eef8ea;
+    color: #1D3815;
+    padding: 7px 11px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .home-package-desc {
+    color: #5b6557;
+    line-height: 1.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 78px;
+  }
+
+  .home-package-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .home-package-btn {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-weight: 900;
+  }
+
+  .home-package-btn.primary {
+    background: #277f0d;
+    color: white;
+  }
+
+  .home-package-btn.light {
+    background: #eef8ea;
+    color: #277f0d;
+  }
+
+  .home-package-btn:hover {
+    opacity: 0.9;
+  }
+`}</style>
+
+<div className="container-xxl py-5 home-package-section">
+  <div className="container">
+    <div className="text-center wow fadeInUp" data-wow-delay="0.1s">
+      <h6 className="section-title bg-white text-center text-primary px-3">
+        Events & Packages
+      </h6>
+      <h1 className="mb-3">Awesome Packages</h1>
+      <p className="mb-5 text-muted">
+        Explore our selected events, tours and travel packages.
+      </p>
     </div>
-    {/* Package End */}
-    {/* Booking Start */}
-    <div className="container-xxl py-5 wow fadeInUp" data-wow-delay="0.1s">
-      <div className="container">
-        <div className="booking p-5">
-          <div className="row g-5 align-items-center">
-            <div className="col-md-6 text-white">
-              <h6 className="text-white text-uppercase">Booking</h6>
-              <h1 className="text-white mb-4">Online Booking</h1>
-              <p className="mb-4">
-                Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit.
-                Aliqu diam amet diam et eos. Clita erat ipsum et lorem et sit.
-              </p>
-              <p className="mb-4">
-                Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit.
-                Aliqu diam amet diam et eos. Clita erat ipsum et lorem et sit,
-                sed stet lorem sit clita duo justo magna dolore erat amet
-              </p>
-              <a className="btn btn-outline-light py-3 px-5 mt-2" href="">
-                Read More
-              </a>
+
+    <div className="row g-4 justify-content-center">
+      {homePackages.map((item, index) => (
+        <div
+          className="col-lg-4 col-md-6 wow fadeInUp"
+          data-wow-delay={`${0.1 + index * 0.2}s`}
+          key={item._id}
+        >
+          <div className="home-package-card">
+            <div className="home-package-img-wrap">
+              <img
+                src={getImageUrl(item.mainImage)}
+                alt={item.title}
+                className="home-package-img"
+              />
+
+              <div className="home-package-badge">
+                {item.category}
+              </div>
+
+              <div className="home-package-price">
+                ৳{Number(item.priceBdt || 0).toLocaleString()}
+              </div>
             </div>
-            <div className="col-md-6">
-              <h1 className="text-white mb-4">Book A Tour</h1>
-              <form>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <div className="form-floating">
-                      <input
-                        type="text"
-                        className="form-control bg-transparent"
-                        id="name"
-                        placeholder="Your Name"
-                      />
-                      <label htmlFor="name">Your Name</label>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="form-floating">
-                      <input
-                        type="email"
-                        className="form-control bg-transparent"
-                        id="email"
-                        placeholder="Your Email"
-                      />
-                      <label htmlFor="email">Your Email</label>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div
-                      className="form-floating date"
-                      id="date3"
-                      data-target-input="nearest"
-                    >
-                      <input
-                        type="text"
-                        className="form-control bg-transparent datetimepicker-input"
-                        id="datetime"
-                        placeholder="Date & Time"
-                        data-target="#date3"
-                        data-toggle="datetimepicker"
-                      />
-                      <label htmlFor="datetime">Date &amp; Time</label>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="form-floating">
-                      <select
-                        className="form-select bg-transparent"
-                        id="select1"
-                      >
-                        <option value={1}>Destination 1</option>
-                        <option value={2}>Destination 2</option>
-                        <option value={3}>Destination 3</option>
-                      </select>
-                      <label htmlFor="select1">Destination</label>
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <div className="form-floating">
-                      <textarea
-                        className="form-control bg-transparent"
-                        placeholder="Special Request"
-                        id="message"
-                        style={{ height: 100 }}
-                        defaultValue={""}
-                      />
-                      <label htmlFor="message">Special Request</label>
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <button
-                      className="btn btn-outline-light w-100 py-3"
-                      type="submit"
-                    >
-                      Book Now
-                    </button>
-                  </div>
-                </div>
-              </form>
+
+            <div className="home-package-body">
+              <h3 className="home-package-title">{item.title}</h3>
+
+              <div className="home-package-meta">
+                <span>
+                  <i className="fa fa-map-marker-alt me-1"></i>
+                  {item.location}
+                </span>
+
+                <span>
+                  <i className="fa fa-clock me-1"></i>
+                  {item.duration || item.durationFilter}
+                </span>
+
+                <span>
+                  <i className="fa fa-users me-1"></i>
+                  {item.minimumPeople || "Flexible"}
+                </span>
+              </div>
+
+              <p className="home-package-desc">
+                {item.shortDescription || item.overview}
+              </p>
+
+              <div className="home-package-actions">
+                <Link
+                  to={`/events-packages/${item.slug}`}
+                  className="home-package-btn light"
+                >
+                  Details
+                </Link>
+
+                <Link
+                  to="/event-package-request"
+                  className="home-package-btn primary"
+                >
+                  Request
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      ))}
     </div>
-    {/* Booking Start */}
+
+    <div className="text-center mt-5">
+      <Link
+        to="/packages"
+        className="btn btn-primary rounded-pill py-3 px-5"
+      >
+        View All Packages
+      </Link>
+    </div>
+  </div>
+</div>
+{/* Package End */}
+    
     {/* Process Start */}
     <div className="container-xxl py-5">
       <div className="container">

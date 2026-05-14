@@ -1,24 +1,67 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
 const ShopBanner = require("../models/ShopBanner");
 
-// GET all banners (admin)
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/shop-banners");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
+
+    cb(null, uniqueName);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed"), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024,
+  },
+});
+
+// GET all banners
 router.get("/", async (req, res) => {
   try {
     const banners = await ShopBanner.find().sort({ serial: 1, createdAt: 1 });
     res.json(banners);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch shop banners", error: error.message });
+    res.status(500).json({
+      message: "Failed to fetch shop banners",
+      error: error.message,
+    });
   }
 });
 
-// GET only active banners (shop page)
+// GET active banners
 router.get("/active/list", async (req, res) => {
   try {
-    const banners = await ShopBanner.find({ status: "active" }).sort({ serial: 1, createdAt: 1 });
+    const banners = await ShopBanner.find({ status: "active" }).sort({
+      serial: 1,
+      createdAt: 1,
+    });
+
     res.json(banners);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch active shop banners", error: error.message });
+    res.status(500).json({
+      message: "Failed to fetch active shop banners",
+      error: error.message,
+    });
   }
 });
 
@@ -33,14 +76,21 @@ router.get("/:id", async (req, res) => {
 
     res.json(banner);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch banner", error: error.message });
+    res.status(500).json({
+      message: "Failed to fetch banner",
+      error: error.message,
+    });
   }
 });
 
-// POST create banner
-router.post("/", async (req, res) => {
+// CREATE banner
+router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const { title, image, serial, status } = req.body;
+    const { title, serial, status } = req.body;
+
+    const image = req.file
+      ? `/uploads/shop-banners/${req.file.filename}`
+      : "";
 
     if (!image) {
       return res.status(400).json({ message: "Banner image is required" });
@@ -48,37 +98,49 @@ router.post("/", async (req, res) => {
 
     const banner = new ShopBanner({
       title: title ? title.trim() : "",
-      image: image.trim(),
-      serial: serial || 0,
+      image,
+      serial: Number(serial || 0),
       status: status || "active",
     });
 
     const savedBanner = await banner.save();
     res.status(201).json(savedBanner);
   } catch (error) {
-    res.status(500).json({ message: "Failed to create banner", error: error.message });
+    res.status(500).json({
+      message: "Failed to create banner",
+      error: error.message,
+    });
   }
 });
 
-// PUT update banner
-router.put("/:id", async (req, res) => {
+// UPDATE banner
+router.put("/:id", upload.single("image"), async (req, res) => {
   try {
-    const { title, image, serial, status } = req.body;
+    const { title, serial, status } = req.body;
 
     const banner = await ShopBanner.findById(req.params.id);
+
     if (!banner) {
       return res.status(404).json({ message: "Banner not found" });
     }
 
     if (title !== undefined) banner.title = title.trim();
-    if (image) banner.image = image.trim();
-    if (serial !== undefined) banner.serial = serial;
+
+    if (req.file) {
+      banner.image = `/uploads/shop-banners/${req.file.filename}`;
+    }
+
+    if (serial !== undefined) banner.serial = Number(serial || 0);
     if (status) banner.status = status;
 
     const updatedBanner = await banner.save();
+
     res.json(updatedBanner);
   } catch (error) {
-    res.status(500).json({ message: "Failed to update banner", error: error.message });
+    res.status(500).json({
+      message: "Failed to update banner",
+      error: error.message,
+    });
   }
 });
 
@@ -93,7 +155,10 @@ router.delete("/:id", async (req, res) => {
 
     res.json({ message: "Banner deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete banner", error: error.message });
+    res.status(500).json({
+      message: "Failed to delete banner",
+      error: error.message,
+    });
   }
 });
 

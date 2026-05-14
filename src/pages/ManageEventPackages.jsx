@@ -282,10 +282,14 @@ export default function ManageEventPackages() {
                     <tr key={item._id}>
                       <td>
                         <img
-                          src={item.mainImage}
-                          alt={item.title}
-                          className="event-thumb"
-                        />
+  src={
+    item.mainImage?.startsWith("http")
+      ? item.mainImage
+      : `${API_BASE_URL}${item.mainImage}`
+  }
+  alt={item.title}
+  className="event-thumb"
+/>
                       </td>
 
                       <td>

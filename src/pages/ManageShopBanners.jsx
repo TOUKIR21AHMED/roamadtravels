@@ -64,7 +64,11 @@ const ManageShopBanners = () => {
                     <td>{index + 1}</td>
                     <td>
                       <img
-                        src={banner.image}
+                        src={
+  banner.image?.startsWith("http")
+    ? banner.image
+    : `${API_BASE_URL}${banner.image}`
+}
                         alt={banner.title || "Banner"}
                         style={{
                           width: "120px",

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
+
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -9,16 +10,26 @@ const EditProduct = () => {
   const [categories, setCategories] = useState([]);
   const [message, setMessage] = useState("");
 
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+
   const [formData, setFormData] = useState({
     categoryId: "",
     name: "",
     slug: "",
-    image: "",
     price: "",
     details: "",
     stock: "",
     status: "active",
   });
+
+  const getImageUrl = (img) => {
+    if (!img) return "";
+
+    return img.startsWith("http")
+      ? img
+      : `${API_BASE_URL}${img}`;
+  };
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -34,12 +45,13 @@ const EditProduct = () => {
           categoryId: product.categoryId?._id || "",
           name: product.name || "",
           slug: product.slug || "",
-          image: product.image || "",
           price: product.price || "",
           details: product.details || "",
           stock: product.stock || "",
           status: product.status || "active",
         });
+
+        setImagePreview(getImageUrl(product.image));
 
         setCategories(categoryRes.data);
       } catch (error) {
@@ -71,15 +83,38 @@ const EditProduct = () => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
 
     try {
-      await axios.put(`${API_BASE_URL}/api/products/${id}`, {
-        ...formData,
-        price: Number(formData.price),
-        stock: Number(formData.stock || 0),
+      const data = new FormData();
+
+      data.append("categoryId", formData.categoryId);
+      data.append("name", formData.name);
+      data.append("slug", formData.slug);
+      data.append("price", Number(formData.price));
+      data.append("details", formData.details);
+      data.append("stock", Number(formData.stock || 0));
+      data.append("status", formData.status);
+
+      if (imageFile) {
+        data.append("image", imageFile);
+      }
+
+      await axios.put(`${API_BASE_URL}/api/products/${id}`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       navigate("/manage-products");
@@ -98,6 +133,7 @@ const EditProduct = () => {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label">Category</label>
+
             <select
               name="categoryId"
               className="form-select"
@@ -106,6 +142,7 @@ const EditProduct = () => {
               required
             >
               <option value="">Select Category</option>
+
               {categories.map((cat) => (
                 <option key={cat._id} value={cat._id}>
                   {cat.name}
@@ -116,6 +153,7 @@ const EditProduct = () => {
 
           <div className="mb-3">
             <label className="form-label">Product Name</label>
+
             <input
               type="text"
               name="name"
@@ -128,6 +166,7 @@ const EditProduct = () => {
 
           <div className="mb-3">
             <label className="form-label">Slug</label>
+
             <input
               type="text"
               name="slug"
@@ -139,19 +178,85 @@ const EditProduct = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Image URL</label>
-            <input
-              type="text"
-              name="image"
-              className="form-control"
-              value={formData.image}
-              onChange={handleChange}
-              required
-            />
+            <label className="form-label">Product Image</label>
+
+            <label
+              style={{
+                width: "100%",
+                minHeight: "240px",
+                border: "2px dashed #9fcf8e",
+                borderRadius: "20px",
+                background: "#f8fff4",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                cursor: "pointer",
+                position: "relative",
+              }}
+            >
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{
+                    width: "100%",
+                    height: "240px",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <div style={{ textAlign: "center", padding: 20 }}>
+                  <div
+                    style={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: "50%",
+                      background: "#277f0d",
+                      color: "#fff",
+                      margin: "0 auto 10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 30,
+                      fontWeight: 900,
+                    }}
+                  >
+                    +
+                  </div>
+
+                  <h5
+                    style={{
+                      fontWeight: 800,
+                      color: "#1D3815",
+                    }}
+                  >
+                    Upload Product Image
+                  </h5>
+
+                  <p
+                    style={{
+                      color: "#6b7467",
+                      marginBottom: 0,
+                    }}
+                  >
+                    Click here and choose new image from your PC
+                  </p>
+                </div>
+              )}
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+              />
+            </label>
           </div>
 
           <div className="mb-3">
             <label className="form-label">Price</label>
+
             <input
               type="number"
               name="price"
@@ -164,6 +269,7 @@ const EditProduct = () => {
 
           <div className="mb-3">
             <label className="form-label">Stock</label>
+
             <input
               type="number"
               name="stock"
@@ -175,6 +281,7 @@ const EditProduct = () => {
 
           <div className="mb-3">
             <label className="form-label">Product Details</label>
+
             <textarea
               name="details"
               className="form-control"
@@ -187,6 +294,7 @@ const EditProduct = () => {
 
           <div className="mb-3">
             <label className="form-label">Status</label>
+
             <select
               name="status"
               className="form-select"
@@ -198,7 +306,10 @@ const EditProduct = () => {
             </select>
           </div>
 
-          <button type="submit" className="btn btn-success rounded-pill px-4">
+          <button
+            type="submit"
+            className="btn btn-success rounded-pill px-4"
+          >
             Update Product
           </button>
         </form>

@@ -65,7 +65,11 @@ const ManageProducts = () => {
                     <td>{index + 1}</td>
                     <td>
                       <img
-                        src={product.image}
+                        src={
+  product.image?.startsWith("http")
+    ? product.image
+    : `${API_BASE_URL}${product.image}`
+}
                         alt={product.name}
                         style={{
                           width: "60px",

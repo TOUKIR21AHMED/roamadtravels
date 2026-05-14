@@ -1,6 +1,39 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
 const District = require("../models/District");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/districts");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
+
+    cb(null, uniqueName);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed"), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024,
+  },
+});
 
 // GET all districts
 router.get("/", async (req, res) => {
@@ -55,11 +88,21 @@ router.get("/slug/:slug", async (req, res) => {
   }
 });
 
-// POST create district
-router.post("/", async (req, res) => {
+// CREATE district with image upload
+router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const newDistrict = new District(req.body);
+    const image = req.file ? `/uploads/districts/${req.file.filename}` : "";
+
+    const newDistrict = new District({
+      divisionId: req.body.divisionId,
+      nameBn: req.body.nameBn,
+      slug: req.body.slug,
+      shortDescription: req.body.shortDescription,
+      image,
+    });
+
     const savedDistrict = await newDistrict.save();
+
     res.status(201).json(savedDistrict);
   } catch (error) {
     res.status(500).json({
@@ -69,11 +112,23 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+// UPDATE district
+router.put("/:id", upload.single("image"), async (req, res) => {
   try {
+    const updateData = {
+      divisionId: req.body.divisionId,
+      nameBn: req.body.nameBn,
+      slug: req.body.slug,
+      shortDescription: req.body.shortDescription,
+    };
+
+    if (req.file) {
+      updateData.image = `/uploads/districts/${req.file.filename}`;
+    }
+
     const updatedDistrict = await District.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true }
     );
 

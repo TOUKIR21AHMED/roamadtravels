@@ -133,6 +133,52 @@ function TourismAdminDashboard() {
             </div>
 
           </div>
+          <div className="col-md-6 col-lg-3">
+  <div style={cardStyle}>
+    <h4 className="mb-3">Create Event Package</h4>
+    <Link
+      to="/admin/create-event-package"
+      className="btn btn-success rounded-pill px-4"
+    >
+      Open
+    </Link>
+  </div>
+</div>
+
+<div className="col-md-6 col-lg-3">
+  <div style={cardStyle}>
+    <h4 className="mb-3">Manage Event Packages</h4>
+    <Link
+      to="/admin/manage-event-packages"
+      className="btn btn-success rounded-pill px-4"
+    >
+      Open
+    </Link>
+  </div>
+</div>
+
+<div className="col-md-6 col-lg-3">
+  <div style={cardStyle}>
+    <h4 className="mb-3">Manage Event Requests</h4>
+    <Link
+      to="/admin/manage-event-requests"
+      className="btn btn-success rounded-pill px-4"
+    >
+      Open
+    </Link>
+  </div>
+</div>
+<div className="col-md-6 col-lg-3">
+  <div style={cardStyle}>
+    <h4 className="mb-3">Flight Requests</h4>
+    <Link
+      to="/admin/flight-requests"
+      className="btn btn-success rounded-pill px-4"
+    >
+      Open
+    </Link>
+  </div>
+</div>
 
         </div>
 

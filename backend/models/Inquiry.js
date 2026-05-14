@@ -29,7 +29,8 @@ const inquirySchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      default: "new",
+      enum: ["pending", "booked", "canceled"],
+  default: "pending",
     },
   },
   { timestamps: true }

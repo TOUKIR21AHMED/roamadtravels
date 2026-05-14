@@ -4,13 +4,15 @@ import API_BASE_URL from "../config";
 
 function AdminDistrict() {
   const [divisions, setDivisions] = useState([]);
-  const [formData, setFormData] = useState({
-    divisionId: "",
-    nameBn: "",
-    slug: "",
-    image: "",
-    shortDescription: "",
-  });
+const [formData, setFormData] = useState({
+  divisionId: "",
+  nameBn: "",
+  slug: "",
+  shortDescription: "",
+});
+
+const [imageFile, setImageFile] = useState(null);
+const [imagePreview, setImagePreview] = useState("");
 
   const [message, setMessage] = useState("");
 
@@ -33,12 +35,35 @@ function AdminDistrict() {
       [e.target.name]: e.target.value,
     });
   };
+  const handleImageChange = (e) => {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  setImageFile(file);
+  setImagePreview(URL.createObjectURL(file));
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await axios.post(`${API_BASE_URL}/api/districts`, formData);
+      const data = new FormData();
+
+data.append("divisionId", formData.divisionId);
+data.append("nameBn", formData.nameBn);
+data.append("slug", formData.slug);
+data.append("shortDescription", formData.shortDescription);
+
+if (imageFile) {
+  data.append("image", imageFile);
+}
+
+await axios.post(`${API_BASE_URL}/api/districts`, data, {
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+});
 
       setMessage("District added successfully");
 
@@ -188,16 +213,72 @@ function AdminDistrict() {
           </div>
 
           <div className="col-md-6">
-            <label className="admin-label">Image URL</label>
-            <input
-              type="text"
-              className="admin-input"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              required
-            />
-          </div>
+  <label className="admin-label">District Image</label>
+
+  <label
+    style={{
+      width: "100%",
+      minHeight: "220px",
+      border: "2px dashed #9fcf8e",
+      borderRadius: "20px",
+      background: "#f8fff4",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      cursor: "pointer",
+      position: "relative",
+    }}
+  >
+    {imagePreview ? (
+      <img
+        src={imagePreview}
+        alt="Preview"
+        style={{
+          width: "100%",
+          height: "220px",
+          objectFit: "cover",
+        }}
+      />
+    ) : (
+      <div style={{ textAlign: "center", padding: 20 }}>
+        <div
+          style={{
+            width: 60,
+            height: 60,
+            borderRadius: "50%",
+            background: "#277f0d",
+            color: "#fff",
+            margin: "0 auto 10px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 30,
+            fontWeight: 900,
+          }}
+        >
+          +
+        </div>
+
+        <h5 style={{ fontWeight: 800, color: "#1D3815" }}>
+          Upload District Image
+        </h5>
+
+        <p style={{ color: "#6b7467", marginBottom: 0 }}>
+          Click here and choose image from your PC
+        </p>
+      </div>
+    )}
+
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleImageChange}
+      style={{ display: "none" }}
+      required
+    />
+  </label>
+</div>
 
           <div className="col-12">
             <label className="admin-label">Short Description</label>

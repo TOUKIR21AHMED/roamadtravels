@@ -127,7 +127,11 @@ export default function EventPackageDetails() {
         .details-hero {
           background:
             linear-gradient(rgba(17, 48, 8, 0.6), rgba(17, 48, 8, 0.52)),
-            url('${item.mainImage}');
+            url('${
+  item.mainImage?.startsWith("http")
+    ? item.mainImage
+    : `${API_BASE_URL}${item.mainImage}`
+}');
           background-size: cover;
           background-position: center;
           padding: 90px 0 80px;
@@ -416,13 +420,25 @@ export default function EventPackageDetails() {
         <div className="row g-4">
           <div className="col-lg-8">
             <div className="details-card">
-              <img src={activeImg} alt={item.title} className="gallery-main" />
+              <img
+  src={
+    activeImg?.startsWith("http")
+      ? activeImg
+      : `${API_BASE_URL}${activeImg}`
+  }
+  alt={item.title}
+  className="gallery-main"
+/>
 
               <div className="gallery-thumbs">
                 {gallery.map((img, index) => (
                   <img
                     key={index}
-                    src={img}
+                    src={
+  img?.startsWith("http")
+    ? img
+    : `${API_BASE_URL}${img}`
+}
                     alt=""
                     className={`gallery-thumb ${activeImg === img ? "active" : ""}`}
                     onClick={() => setActiveImg(img)}

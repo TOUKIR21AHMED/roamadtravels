@@ -8,15 +8,22 @@ function EditDistrict() {
   const navigate = useNavigate();
 
   const [divisions, setDivisions] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+
   const [formData, setFormData] = useState({
     divisionId: "",
     nameBn: "",
     slug: "",
-    image: "",
     shortDescription: "",
   });
 
   const [message, setMessage] = useState("");
+
+  const getImageUrl = (img) => {
+    if (!img) return "";
+    return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
+  };
 
   useEffect(() => {
     const loadDivisions = async () => {
@@ -38,9 +45,10 @@ function EditDistrict() {
             divisionId: found.divisionId?._id || found.divisionId || "",
             nameBn: found.nameBn || "",
             slug: found.slug || "",
-            image: found.image || "",
             shortDescription: found.shortDescription || "",
           });
+
+          setImagePreview(getImageUrl(found.image));
         }
       } catch (error) {
         console.log(error);
@@ -58,11 +66,36 @@ function EditDistrict() {
     });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await axios.put(`${API_BASE_URL}/api/districts/${id}`, formData);
+      const data = new FormData();
+
+      data.append("divisionId", formData.divisionId);
+      data.append("nameBn", formData.nameBn);
+      data.append("slug", formData.slug);
+      data.append("shortDescription", formData.shortDescription);
+
+      if (imageFile) {
+        data.append("image", imageFile);
+      }
+
+      await axios.put(`${API_BASE_URL}/api/districts/${id}`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       setMessage("District updated successfully");
 
       setTimeout(() => {
@@ -75,9 +108,18 @@ function EditDistrict() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f4f8f2", padding: "60px 15px" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f4f8f2",
+        padding: "60px 15px",
+      }}
+    >
       <div className="container">
-        <div className="bg-white shadow rounded p-4" style={{ maxWidth: "900px", margin: "0 auto" }}>
+        <div
+          className="bg-white shadow rounded p-4"
+          style={{ maxWidth: "900px", margin: "0 auto" }}
+        >
           <h2 className="mb-4 text-center" style={{ color: "#1D3815" }}>
             Edit District
           </h2>
@@ -128,15 +170,70 @@ function EditDistrict() {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label">Image URL</label>
-              <input
-                type="text"
-                className="form-control"
-                name="image"
-                value={formData.image}
-                onChange={handleChange}
-                required
-              />
+              <label className="form-label">District Image</label>
+
+              <label
+                style={{
+                  width: "100%",
+                  minHeight: "220px",
+                  border: "2px dashed #9fcf8e",
+                  borderRadius: "20px",
+                  background: "#f8fff4",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  position: "relative",
+                }}
+              >
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={{
+                      width: "100%",
+                      height: "220px",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div style={{ textAlign: "center", padding: 20 }}>
+                    <div
+                      style={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: "50%",
+                        background: "#277f0d",
+                        color: "#fff",
+                        margin: "0 auto 10px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 30,
+                        fontWeight: 900,
+                      }}
+                    >
+                      +
+                    </div>
+
+                    <h5 style={{ fontWeight: 800, color: "#1D3815" }}>
+                      Upload District Image
+                    </h5>
+
+                    <p style={{ color: "#6b7467", marginBottom: 0 }}>
+                      Click here and choose new image from your PC
+                    </p>
+                  </div>
+                )}
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  style={{ display: "none" }}
+                />
+              </label>
             </div>
 
             <div className="col-12">

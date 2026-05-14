@@ -65,6 +65,7 @@ import EditEventPackage from "./pages/EditEventPackage";
 import EventPackageDetails from "./pages/EventPackageDetails";
 import EventPackageRequest from "./pages/EventPackageRequest";
 import ManageEventRequests from "./pages/ManageEventRequests";
+import FlightRequestsAdmin from "./pages/FlightRequestsAdmin";
 
 export default function App() {
 
@@ -119,12 +120,49 @@ export default function App() {
           element={<AdminLogin />}
         />
 
-<Route path="/admin/create-event-package" element={<CreateEventPackage />} />
-<Route path="/admin/manage-event-packages" element={<ManageEventPackages />} />
-<Route path="/admin/edit-event-package/:id" element={<EditEventPackage />} />
-<Route path="/events-packages/:slug" element={<EventPackageDetails />} />
-<Route path="/event-package-request" element={<EventPackageRequest />} />
-<Route path="/admin/manage-event-requests" element={<ManageEventRequests />} />
+<Route path="/admin/create-event-package" element={ <ProtectedRoute
+      allowedRoles={[
+        "super_admin",
+        "tourism_admin",
+      ]}
+    ><CreateEventPackage /></ProtectedRoute>} />
+<Route path="/admin/manage-event-packages" element={ <ProtectedRoute
+      allowedRoles={[
+        "super_admin",
+        "tourism_admin",
+      ]}
+    ><ManageEventPackages /></ProtectedRoute>} />
+<Route path="/admin/edit-event-package/:id" element={ <ProtectedRoute
+      allowedRoles={[
+        "super_admin",
+        "tourism_admin",
+      ]}
+    ><EditEventPackage /></ProtectedRoute>} />
+<Route path="/events-packages/:slug" element={ <ProtectedRoute
+      allowedRoles={[
+        "super_admin",
+        "tourism_admin",
+        "shop_admin",
+      ]}
+    ><EventPackageDetails /></ProtectedRoute>} />
+<Route path="/event-package-request" element={ <ProtectedRoute
+      allowedRoles={[
+        "super_admin",
+        "tourism_admin",
+      ]}
+    ><EventPackageRequest /></ProtectedRoute>} />
+<Route path="/admin/manage-event-requests" element={ <ProtectedRoute
+      allowedRoles={[
+        "super_admin",
+        "tourism_admin",
+      ]}
+    ><ManageEventRequests /></ProtectedRoute>} />
+    <Route path="/admin/flight-requests" element={ <ProtectedRoute
+      allowedRoles={[
+        "super_admin",
+        "tourism_admin",
+      ]}
+    ><FlightRequestsAdmin /></ProtectedRoute>} />
         {/* SUPER ADMIN */}
 
         <Route

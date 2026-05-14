@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const divisionRoutes = require("./routes/divisionRoutes");
@@ -18,18 +19,19 @@ const eventRequestRoutes = require("./routes/eventRequestRoutes");
 
 const app = express();
 
-// ✅ PORT fix (IMPORTANT)
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+// ✅ uploaded images public korar jonno
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("MongoDB Connected Successfully");
 
-    // ✅ এখানে change করা হয়েছে
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

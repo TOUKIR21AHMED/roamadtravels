@@ -20,6 +20,11 @@ const durations = [
 
 const timeSlots = ["00-06", "06-12", "12-18", "18-00"];
 
+const getImageUrl = (img) => {
+  if (!img) return "";
+  return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
+};
+
 export default function EditEventPackage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -27,14 +32,19 @@ export default function EditEventPackage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const [mainImageFile, setMainImageFile] = useState(null);
+  const [mainImagePreview, setMainImagePreview] = useState("");
+
+  const [oldGalleryImages, setOldGalleryImages] = useState([]);
+  const [newGalleryImages, setNewGalleryImages] = useState([]);
+
   const [form, setForm] = useState({
     title: "",
     slug: "",
     category: "Sightseeing & Day-Tours",
     location: "",
     country: "Bangladesh",
-    mainImage: "",
-    galleryImages: "",
+    oldMainImage: "",
     duration: "",
     durationFilter: "24+ hours",
     timeSlot: "06-12",
@@ -63,17 +73,13 @@ export default function EditEventPackage() {
   const [itinerary, setItinerary] = useState([]);
   const [options, setOptions] = useState([]);
 
-  const joinLines = (arr) => {
-    if (!Array.isArray(arr)) return "";
-    return arr.join("\n");
-  };
+  const joinLines = (arr) => (Array.isArray(arr) ? arr.join("\n") : "");
 
-  const splitLines = (text) => {
-    return String(text || "")
+  const splitLines = (text) =>
+    String(text || "")
       .split("\n")
       .map((item) => item.trim())
       .filter(Boolean);
-  };
 
   useEffect(() => {
     const fetchSingle = async () => {
@@ -96,8 +102,7 @@ export default function EditEventPackage() {
           category: found.category || "Sightseeing & Day-Tours",
           location: found.location || "",
           country: found.country || "Bangladesh",
-          mainImage: found.mainImage || "",
-          galleryImages: joinLines(found.galleryImages),
+          oldMainImage: found.mainImage || "",
           duration: found.duration || "",
           durationFilter: found.durationFilter || "24+ hours",
           timeSlot: found.timeSlot || "06-12",
@@ -123,6 +128,9 @@ export default function EditEventPackage() {
           isPublished: Boolean(found.isPublished),
         });
 
+        setMainImagePreview(getImageUrl(found.mainImage));
+        setOldGalleryImages(found.galleryImages || []);
+
         setItinerary(
           found.itinerary?.length
             ? found.itinerary
@@ -147,10 +155,38 @@ export default function EditEventPackage() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleMainImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setMainImageFile(file);
+    setMainImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleGalleryChange = (e) => {
+    const files = Array.from(e.target.files || []);
+
+    const mapped = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setNewGalleryImages((prev) => [...prev, ...mapped]);
+  };
+
+  const removeOldGallery = (index) => {
+    setOldGalleryImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewGallery = (index) => {
+    setNewGalleryImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleUpdate = async (e) => {
@@ -158,22 +194,43 @@ export default function EditEventPackage() {
     setSaving(true);
 
     try {
-      const payload = {
-        ...form,
-        priceBdt: Number(form.priceBdt),
-        priceUsd: Number(form.priceUsd || 0),
-        galleryImages: splitLines(form.galleryImages),
-        inclusions: splitLines(form.inclusions),
-        exclusions: splitLines(form.exclusions),
-        requirements: splitLines(form.requirements),
-        facilities: splitLines(form.facilities),
-        additionalInfo: splitLines(form.additionalInfo),
-        travelTips: splitLines(form.travelTips),
-        itinerary,
-        options: options.filter((op) => op.title?.trim()),
-      };
+      const formData = new FormData();
 
-      await axios.put(`${API_BASE_URL}/api/event-packages/${id}`, payload);
+      Object.keys(form).forEach((key) => {
+        formData.append(key, form[key]);
+      });
+
+      formData.append("priceBdt", form.priceBdt || 0);
+      formData.append("priceUsd", form.priceUsd || 0);
+
+      formData.append("oldGalleryImages", JSON.stringify(oldGalleryImages));
+
+      formData.append("inclusions", JSON.stringify(splitLines(form.inclusions)));
+      formData.append("exclusions", JSON.stringify(splitLines(form.exclusions)));
+      formData.append("requirements", JSON.stringify(splitLines(form.requirements)));
+      formData.append("facilities", JSON.stringify(splitLines(form.facilities)));
+      formData.append("additionalInfo", JSON.stringify(splitLines(form.additionalInfo)));
+      formData.append("travelTips", JSON.stringify(splitLines(form.travelTips)));
+
+      formData.append("itinerary", JSON.stringify(itinerary));
+      formData.append(
+        "options",
+        JSON.stringify(options.filter((op) => op.title?.trim()))
+      );
+
+      if (mainImageFile) {
+        formData.append("mainImage", mainImageFile);
+      }
+
+      newGalleryImages.forEach((item) => {
+        formData.append("galleryImages", item.file);
+      });
+
+      await axios.put(`${API_BASE_URL}/api/event-packages/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       alert("Event Package Updated Successfully ✅");
       navigate("/admin/manage-event-packages");
@@ -258,10 +315,83 @@ export default function EditEventPackage() {
           min-height: 110px;
         }
 
-        .hint {
-          font-size: 0.82rem;
-          color: #6b7467;
-          margin-top: 5px;
+        .image-upload-box {
+          position: relative;
+          min-height: 250px;
+          border: 2px dashed #9fcf8e;
+          border-radius: 22px;
+          background: linear-gradient(135deg, #f8fff4, #eef8ea);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          cursor: pointer;
+        }
+
+        .image-upload-box input {
+          display: none;
+        }
+
+        .upload-placeholder {
+          text-align: center;
+          color: #1D3815;
+          padding: 25px;
+        }
+
+        .upload-icon {
+          width: 58px;
+          height: 58px;
+          border-radius: 50%;
+          background: #277f0d;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 28px;
+          margin: 0 auto 12px;
+          font-weight: 900;
+        }
+
+        .main-preview {
+          width: 100%;
+          height: 270px;
+          object-fit: cover;
+        }
+
+        .gallery-preview-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+          gap: 14px;
+          margin-top: 15px;
+        }
+
+        .gallery-preview-card {
+          position: relative;
+          height: 105px;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid #dce8d7;
+          background: #f6fbf4;
+        }
+
+        .gallery-preview-card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .gallery-remove-btn {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: none;
+          background: #dc3545;
+          color: white;
+          font-weight: 900;
+          line-height: 1;
         }
 
         .mini-card {
@@ -297,7 +427,7 @@ export default function EditEventPackage() {
       <div className="event-admin-container">
         <div className="event-admin-header">
           <h2>Edit Events & Packages</h2>
-          <p className="mb-0">Update package content, price, gallery and policy.</p>
+          <p className="mb-0">Update package content, price, images and policy.</p>
         </div>
 
         <form className="event-admin-body" onSubmit={handleUpdate}>
@@ -366,27 +496,80 @@ export default function EditEventPackage() {
           <div className="event-section">
             <div className="event-section-title">Images</div>
 
-            <div className="row g-3">
+            <div className="row g-4">
               <div className="col-md-12">
-                <label className="form-label">Main Image URL</label>
-                <input
-                  name="mainImage"
-                  className="form-control"
-                  value={form.mainImage}
-                  onChange={handleChange}
-                  required
-                />
+                <label className="form-label">Main Image</label>
+
+                <label className="image-upload-box">
+                  {mainImagePreview ? (
+                    <img
+                      src={mainImagePreview}
+                      alt="Main Preview"
+                      className="main-preview"
+                    />
+                  ) : (
+                    <div className="upload-placeholder">
+                      <div className="upload-icon">+</div>
+                      <h5>Upload Main Image</h5>
+                      <p>Click here and choose image from your PC</p>
+                    </div>
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleMainImageChange}
+                  />
+                </label>
               </div>
 
               <div className="col-md-12">
-                <label className="form-label">Gallery Images URL</label>
-                <textarea
-                  name="galleryImages"
-                  className="form-control"
-                  value={form.galleryImages}
-                  onChange={handleChange}
-                  placeholder="One image URL per line"
-                />
+                <label className="form-label">Gallery Images</label>
+
+                <label className="image-upload-box">
+                  <div className="upload-placeholder">
+                    <div className="upload-icon">+</div>
+                    <h5>Add Gallery Images</h5>
+                    <p>Old images will stay. New selected images will be added.</p>
+                  </div>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleGalleryChange}
+                  />
+                </label>
+
+                {(oldGalleryImages.length > 0 || newGalleryImages.length > 0) && (
+                  <div className="gallery-preview-grid">
+                    {oldGalleryImages.map((img, index) => (
+                      <div className="gallery-preview-card" key={`old-${index}`}>
+                        <img src={getImageUrl(img)} alt="" />
+                        <button
+                          type="button"
+                          className="gallery-remove-btn"
+                          onClick={() => removeOldGallery(index)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+
+                    {newGalleryImages.map((item, index) => (
+                      <div className="gallery-preview-card" key={`new-${index}`}>
+                        <img src={item.preview} alt="" />
+                        <button
+                          type="button"
+                          className="gallery-remove-btn"
+                          onClick={() => removeNewGallery(index)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -686,7 +869,7 @@ export default function EditEventPackage() {
                       value={op.priceBdt}
                       onChange={(e) => {
                         const copy = [...options];
-                        copy[index].priceBdt = Number(e.target.value);
+                        copy[index].priceBdt = e.target.value;
                         setOptions(copy);
                       }}
                     />
@@ -700,7 +883,7 @@ export default function EditEventPackage() {
                       value={op.priceUsd}
                       onChange={(e) => {
                         const copy = [...options];
-                        copy[index].priceUsd = Number(e.target.value);
+                        copy[index].priceUsd = e.target.value;
                         setOptions(copy);
                       }}
                     />

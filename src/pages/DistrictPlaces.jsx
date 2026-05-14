@@ -8,6 +8,10 @@ function DistrictPlaces() {
   const [district, setDistrict] = useState(null);
   const [places, setPlaces] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const getImageUrl = (img) => {
+  if (!img) return "";
+  return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
+};
 
   useEffect(() => {
     fetchDistrictAndPlaces();
@@ -210,7 +214,7 @@ function DistrictPlaces() {
             <div className="col-lg-4 col-md-6 mb-4" key={place._id}>
               <div className="place-card">
                 <img
-                  src={place.image}
+                  src={getImageUrl(place.image)}
                   className="place-card-img"
                   alt={place.nameBn}
                 />
@@ -234,7 +238,7 @@ function DistrictPlaces() {
         <div className="place-modal-overlay">
           <div className="place-modal-box">
             <img
-              src={selectedPlace.image}
+              src={getImageUrl(selectedPlace.image)}
               alt={selectedPlace.nameBn}
               className="place-modal-image"
             />

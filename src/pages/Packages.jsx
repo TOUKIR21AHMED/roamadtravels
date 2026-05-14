@@ -524,7 +524,7 @@ export default function EventsPackages() {
       <section className="container py-5">
         <div className="request-banner">
           <div>
-            <h3>Can’t find your perfect event?</h3>
+            <h3>Can’t find your perfect Tour Package?</h3>
             <p className="mb-0">Create your own custom tour or event request.</p>
           </div>
 
@@ -647,7 +647,7 @@ export default function EventsPackages() {
                   setPage(1);
                 }}
               >
-                <option value="">All Time</option>
+                <option value="">00:00-04:00</option>
                 {timeSlots.map((t) => (
                   <option key={t.value} value={t.value}>
                     {t.label}
@@ -675,7 +675,11 @@ export default function EventsPackages() {
                     <div className="event-card">
                       <div className="event-img-wrap">
                         <img
-                          src={item.mainImage}
+                          src={
+  item.mainImage?.startsWith("http")
+    ? item.mainImage
+    : `${API_BASE_URL}${item.mainImage}`
+}
                           alt={item.title}
                           className="event-img"
                         />

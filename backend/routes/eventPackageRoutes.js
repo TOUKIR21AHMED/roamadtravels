@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
 const EventPackage = require("../models/EventPackage");
 
 const router = express.Router();
@@ -13,27 +15,137 @@ const makeSlug = (text) => {
     .replace(/-+/g, "-");
 };
 
-// CREATE
-router.post("/", async (req, res) => {
-  try {
-    const slugBase = makeSlug(req.body.title);
-    const slug = req.body.slug ? makeSlug(req.body.slug) : `${slugBase}-${Date.now()}`;
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/events");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
 
-    const eventPackage = await EventPackage.create({
-      ...req.body,
-      slug,
-    });
-
-    res.status(201).json(eventPackage);
-  } catch (error) {
-    res.status(500).json({
-      message: "Event package create failed",
-      error: error.message,
-    });
-  }
+    cb(null, uniqueName);
+  },
 });
 
-// GET ALL WITH FILTER, SEARCH, PAGINATION
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed"), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024,
+  },
+});
+
+const parseArray = (value) => {
+  try {
+    return JSON.parse(value || "[]");
+  } catch {
+    return [];
+  }
+};
+
+// CREATE
+router.post(
+  "/",
+  upload.fields([
+    { name: "mainImage", maxCount: 1 },
+    { name: "galleryImages", maxCount: 20 },
+  ]),
+  async (req, res) => {
+    try {
+      const slugBase = makeSlug(req.body.title);
+      const slug = req.body.slug
+        ? makeSlug(req.body.slug)
+        : `${slugBase}-${Date.now()}`;
+
+      const mainImage = req.files?.mainImage?.[0]
+        ? `/uploads/events/${req.files.mainImage[0].filename}`
+        : "";
+
+      const galleryImages = req.files?.galleryImages
+        ? req.files.galleryImages.map(
+            (file) => `/uploads/events/${file.filename}`
+          )
+        : [];
+
+      if (!mainImage) {
+        return res.status(400).json({
+          message: "Main image is required",
+        });
+      }
+
+      const eventPackage = await EventPackage.create({
+        title: req.body.title,
+        slug,
+
+        category: req.body.category,
+        location: req.body.location,
+        country: req.body.country,
+
+        mainImage,
+        galleryImages,
+
+        duration: req.body.duration,
+        durationFilter: req.body.durationFilter,
+        timeSlot: req.body.timeSlot,
+        minimumPeople: req.body.minimumPeople,
+
+priceBdt: isNaN(Number(req.body.priceBdt))
+  ? 0
+  : Number(req.body.priceBdt),
+
+priceUsd: isNaN(Number(req.body.priceUsd))
+  ? 0
+  : Number(req.body.priceUsd),
+        currencyDefault: req.body.currencyDefault,
+
+        shortDescription: req.body.shortDescription,
+        overview: req.body.overview,
+        locationDetails: req.body.locationDetails,
+        timingDetails: req.body.timingDetails,
+        description: req.body.description,
+
+        mapEmbedUrl: req.body.mapEmbedUrl,
+        cancellationPolicy: req.body.cancellationPolicy,
+        refundPolicy: req.body.refundPolicy,
+
+        inclusions: parseArray(req.body.inclusions),
+        exclusions: parseArray(req.body.exclusions),
+        requirements: parseArray(req.body.requirements),
+        facilities: parseArray(req.body.facilities),
+        additionalInfo: parseArray(req.body.additionalInfo),
+        travelTips: parseArray(req.body.travelTips),
+
+        itinerary: parseArray(req.body.itinerary),
+        options: parseArray(req.body.options),
+
+        isFeatured: req.body.isFeatured === "true",
+        isPublished: req.body.isPublished === "true",
+      });
+
+      res.status(201).json(eventPackage);
+    } catch (error) {
+      console.log("Event package create error:", error);
+
+      res.status(500).json({
+        message: "Event package create failed",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// GET ALL
 router.get("/", async (req, res) => {
   try {
     const {
@@ -148,7 +260,7 @@ router.get("/:slug", async (req, res) => {
   }
 });
 
-// UPDATE
+// UPDATE old JSON update thaklo
 router.put("/:id", async (req, res) => {
   try {
     const updateData = { ...req.body };

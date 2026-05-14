@@ -1,9 +1,44 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
+
 const Product = require("../models/Product");
 const ProductCategory = require("../models/ProductCategory");
 
-// GET all products with category filter / search / sort / pagination
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/products");
+  },
+
+  filename: function (req, file, cb) {
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
+
+    cb(null, uniqueName);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed"), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024,
+  },
+});
+
+// GET all products
 router.get("/", async (req, res) => {
   try {
     const {
@@ -19,7 +54,6 @@ router.get("/", async (req, res) => {
 
     let query = { status: "active" };
 
-    // Global search active থাকলে category ignore হবে
     if (search && search.trim().length >= 2) {
       query.name = { $regex: search.trim(), $options: "i" };
     } else if (categoryId) {
@@ -35,6 +69,7 @@ router.get("/", async (req, res) => {
     }
 
     const totalProducts = await Product.countDocuments(query);
+
     const totalPages = Math.ceil(totalProducts / perPage);
 
     const products = await Product.find(query)
@@ -50,83 +85,118 @@ router.get("/", async (req, res) => {
       totalProducts,
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch products", error: error.message });
+    res.status(500).json({
+      message: "Failed to fetch products",
+      error: error.message,
+    });
   }
 });
 
 // GET single product
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate("categoryId", "name slug");
+    const product = await Product.findById(req.params.id).populate(
+      "categoryId",
+      "name slug"
+    );
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        message: "Product not found",
+      });
     }
 
     res.json(product);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch product", error: error.message });
+    res.status(500).json({
+      message: "Failed to fetch product",
+      error: error.message,
+    });
   }
 });
 
-// POST create product
-router.post("/", async (req, res) => {
+// CREATE product with image upload
+router.post("/", upload.single("image"), async (req, res) => {
   try {
     const {
       categoryId,
       name,
       slug,
-      image,
       price,
       details,
       stock,
       status,
     } = req.body;
 
-    if (!categoryId || !name || !slug || !image || price === undefined || !details) {
+    const image = req.file
+      ? `/uploads/products/${req.file.filename}`
+      : "";
+
+    if (
+      !categoryId ||
+      !name ||
+      !slug ||
+      !image ||
+      price === undefined ||
+      !details
+    ) {
       return res.status(400).json({
-        message: "Category, name, slug, image, price and details are required",
+        message:
+          "Category, name, slug, image, price and details are required",
       });
     }
 
     const categoryExists = await ProductCategory.findById(categoryId);
+
     if (!categoryExists) {
-      return res.status(400).json({ message: "Invalid category selected" });
+      return res.status(400).json({
+        message: "Invalid category selected",
+      });
     }
 
-    const existingSlug = await Product.findOne({ slug: slug.trim().toLowerCase() });
+    const existingSlug = await Product.findOne({
+      slug: slug.trim().toLowerCase(),
+    });
+
     if (existingSlug) {
-      return res.status(400).json({ message: "Product slug already exists" });
+      return res.status(400).json({
+        message: "Product slug already exists",
+      });
     }
 
     const product = new Product({
       categoryId,
       name: name.trim(),
       slug: slug.trim().toLowerCase(),
-      image: image.trim(),
-      price,
+      image,
+      price: Number(price),
       details: details.trim(),
-      stock: stock || 0,
+      stock: Number(stock || 0),
       status: status || "active",
     });
 
     const savedProduct = await product.save();
-    const populatedProduct = await Product.findById(savedProduct._id).populate("categoryId", "name slug");
+
+    const populatedProduct = await Product.findById(
+      savedProduct._id
+    ).populate("categoryId", "name slug");
 
     res.status(201).json(populatedProduct);
   } catch (error) {
-    res.status(500).json({ message: "Failed to create product", error: error.message });
+    res.status(500).json({
+      message: "Failed to create product",
+      error: error.message,
+    });
   }
 });
 
-// PUT update product
-router.put("/:id", async (req, res) => {
+// UPDATE product
+router.put("/:id", upload.single("image"), async (req, res) => {
   try {
     const {
       categoryId,
       name,
       slug,
-      image,
       price,
       details,
       stock,
@@ -134,15 +204,22 @@ router.put("/:id", async (req, res) => {
     } = req.body;
 
     const product = await Product.findById(req.params.id);
+
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        message: "Product not found",
+      });
     }
 
     if (categoryId) {
       const categoryExists = await ProductCategory.findById(categoryId);
+
       if (!categoryExists) {
-        return res.status(400).json({ message: "Invalid category selected" });
+        return res.status(400).json({
+          message: "Invalid category selected",
+        });
       }
+
       product.categoryId = categoryId;
     }
 
@@ -155,24 +232,46 @@ router.put("/:id", async (req, res) => {
       });
 
       if (existingSlug) {
-        return res.status(400).json({ message: "Product slug already exists" });
+        return res.status(400).json({
+          message: "Product slug already exists",
+        });
       }
 
       product.slug = slug.trim().toLowerCase();
     }
 
-    if (image) product.image = image.trim();
-    if (price !== undefined) product.price = price;
-    if (details) product.details = details.trim();
-    if (stock !== undefined) product.stock = stock;
-    if (status) product.status = status;
+    if (req.file) {
+      product.image = `/uploads/products/${req.file.filename}`;
+    }
+
+    if (price !== undefined) {
+      product.price = Number(price);
+    }
+
+    if (details) {
+      product.details = details.trim();
+    }
+
+    if (stock !== undefined) {
+      product.stock = Number(stock);
+    }
+
+    if (status) {
+      product.status = status;
+    }
 
     const updatedProduct = await product.save();
-    const populatedProduct = await Product.findById(updatedProduct._id).populate("categoryId", "name slug");
+
+    const populatedProduct = await Product.findById(
+      updatedProduct._id
+    ).populate("categoryId", "name slug");
 
     res.json(populatedProduct);
   } catch (error) {
-    res.status(500).json({ message: "Failed to update product", error: error.message });
+    res.status(500).json({
+      message: "Failed to update product",
+      error: error.message,
+    });
   }
 });
 
@@ -182,12 +281,19 @@ router.delete("/:id", async (req, res) => {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
 
     if (!deletedProduct) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        message: "Product not found",
+      });
     }
 
-    res.json({ message: "Product deleted successfully" });
+    res.json({
+      message: "Product deleted successfully",
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete product", error: error.message });
+    res.status(500).json({
+      message: "Failed to delete product",
+      error: error.message,
+    });
   }
 });
 

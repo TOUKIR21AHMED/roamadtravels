@@ -2,33 +2,17 @@ import axios from "axios";
 import { useState } from "react";
 import API_BASE_URL from "../config";
 
-const categories = [
-  "Attractions & Shows",
-  "Activities & Experiences",
-  "Sightseeing & Day-Tours",
-  "Day-Out Packages",
-  "Adventure",
-];
-
-const durations = [
-  "Less than 6 hours",
-  "6 - 12 hours",
-  "12 - 24 hours",
-  "24+ hours",
-];
-
-const timeSlots = ["00-06", "06-12", "12-18", "18-00"];
-
 export default function CreateEventPackage() {
   const [loading, setLoading] = useState(false);
+  const [mainImageFile, setMainImageFile] = useState(null);
+  const [mainImagePreview, setMainImagePreview] = useState("");
+  const [galleryFiles, setGalleryFiles] = useState([]);
 
   const [form, setForm] = useState({
     title: "",
     category: "Sightseeing & Day-Tours",
     location: "",
     country: "Bangladesh",
-    mainImage: "",
-    galleryImages: "",
     duration: "",
     durationFilter: "24+ hours",
     timeSlot: "06-12",
@@ -62,6 +46,23 @@ export default function CreateEventPackage() {
     { title: "", priceBdt: "", priceUsd: "", details: "" },
   ]);
 
+  const categories = [
+    "Attractions & Shows",
+    "Activities & Experiences",
+    "Sightseeing & Day-Tours",
+    "Day-Out Packages",
+    "Adventure",
+  ];
+
+  const durations = [
+    "Less than 6 hours",
+    "6 - 12 hours",
+    "12 - 24 hours",
+    "24+ hours",
+  ];
+
+  const timeSlots = ["00-06", "06-12", "12-18", "18-00"];
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -70,34 +71,84 @@ export default function CreateEventPackage() {
     }));
   };
 
-  const splitLines = (text) => {
-    return text
+  const splitLines = (text) =>
+    text
       .split("\n")
       .map((item) => item.trim())
       .filter(Boolean);
+
+  const handleMainImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setMainImageFile(file);
+    setMainImagePreview(URL.createObjectURL(file));
+  };
+
+  const removeMainImage = () => {
+    setMainImageFile(null);
+    setMainImagePreview("");
+  };
+
+  const handleGalleryImages = (e) => {
+    const files = Array.from(e.target.files);
+
+    const newImages = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setGalleryFiles((prev) => [...prev, ...newImages]);
+  };
+
+  const removeGalleryImage = (index) => {
+    setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!mainImageFile) {
+      alert("Please upload main image");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const payload = {
-        ...form,
-        priceBdt: Number(form.priceBdt),
-        priceUsd: Number(form.priceUsd || 0),
-        galleryImages: splitLines(form.galleryImages),
-        inclusions: splitLines(form.inclusions),
-        exclusions: splitLines(form.exclusions),
-        requirements: splitLines(form.requirements),
-        facilities: splitLines(form.facilities),
-        additionalInfo: splitLines(form.additionalInfo),
-        travelTips: splitLines(form.travelTips),
-        itinerary,
-        options: options.filter((op) => op.title.trim()),
-      };
+      const formData = new FormData();
 
-      await axios.post(`${API_BASE_URL}/api/event-packages`, payload);
+      Object.keys(form).forEach((key) => {
+        formData.append(key, form[key]);
+      });
+
+      formData.append("mainImage", mainImageFile);
+
+      galleryFiles.forEach((item) => {
+        formData.append("galleryImages", item.file);
+      });
+
+formData.append("priceBdt", form.priceBdt || 0);
+formData.append("priceUsd", form.priceUsd || 0);
+
+      formData.append("inclusions", JSON.stringify(splitLines(form.inclusions)));
+      formData.append("exclusions", JSON.stringify(splitLines(form.exclusions)));
+      formData.append("requirements", JSON.stringify(splitLines(form.requirements)));
+      formData.append("facilities", JSON.stringify(splitLines(form.facilities)));
+      formData.append("additionalInfo", JSON.stringify(splitLines(form.additionalInfo)));
+      formData.append("travelTips", JSON.stringify(splitLines(form.travelTips)));
+
+      formData.append("itinerary", JSON.stringify(itinerary));
+      formData.append(
+        "options",
+        JSON.stringify(options.filter((op) => op.title.trim()))
+      );
+
+      await axios.post(`${API_BASE_URL}/api/event-packages`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       alert("Event Package Created Successfully ✅");
       window.location.reload();
@@ -179,10 +230,116 @@ export default function CreateEventPackage() {
           min-height: 110px;
         }
 
-        .hint {
-          font-size: 0.82rem;
+        .image-upload-box {
+          position: relative;
+          min-height: 230px;
+          border: 2px dashed #9fcf8e;
+          border-radius: 22px;
+          background: linear-gradient(135deg, #f8fff4, #eef8ea);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          cursor: pointer;
+          transition: 0.25s ease;
+        }
+
+        .image-upload-box:hover {
+          border-color: #277f0d;
+          background: #f5fff0;
+        }
+
+        .upload-placeholder {
+          text-align: center;
+          color: #1D3815;
+          padding: 25px;
+        }
+
+        .upload-icon {
+          width: 58px;
+          height: 58px;
+          border-radius: 50%;
+          background: #277f0d;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 28px;
+          margin: 0 auto 12px;
+          font-weight: 900;
+        }
+
+        .upload-placeholder h5 {
+          font-weight: 900;
+          margin-bottom: 6px;
+        }
+
+        .upload-placeholder p {
+          margin: 0;
           color: #6b7467;
-          margin-top: 5px;
+          font-size: 0.9rem;
+        }
+
+        .image-upload-box input {
+          display: none;
+        }
+
+        .main-preview {
+          width: 100%;
+          height: 260px;
+          object-fit: cover;
+        }
+
+        .remove-image-btn {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          border: none;
+          background: #dc3545;
+          color: white;
+          font-size: 20px;
+          font-weight: 900;
+          line-height: 1;
+          z-index: 5;
+        }
+
+        .gallery-preview-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+          gap: 14px;
+          margin-top: 15px;
+        }
+
+        .gallery-preview-card {
+          position: relative;
+          height: 105px;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid #dce8d7;
+          background: #f6fbf4;
+        }
+
+        .gallery-preview-card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .gallery-remove-btn {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: none;
+          background: #dc3545;
+          color: white;
+          font-weight: 900;
+          line-height: 1;
         }
 
         .mini-card {
@@ -212,7 +369,7 @@ export default function CreateEventPackage() {
       <div className="event-admin-container">
         <div className="event-admin-header">
           <h2>Create Events & Packages</h2>
-          <p>Premium dynamic event/package upload system for admin.</p>
+          <p>Admin can upload package images directly from PC.</p>
         </div>
 
         <form className="event-admin-body" onSubmit={handleSubmit}>
@@ -227,7 +384,6 @@ export default function CreateEventPackage() {
                   className="form-control"
                   value={form.title}
                   onChange={handleChange}
-                  placeholder="Kandy, Nuwara Eliya, Bentota & Colombo - 5 Days"
                   required
                 />
               </div>
@@ -253,7 +409,6 @@ export default function CreateEventPackage() {
                   className="form-control"
                   value={form.location}
                   onChange={handleChange}
-                  placeholder="Sri Lanka / Cox's Bazar / Sajek"
                   required
                 />
               </div>
@@ -273,29 +428,80 @@ export default function CreateEventPackage() {
           <div className="event-section">
             <div className="event-section-title">Images</div>
 
-            <div className="row g-3">
+            <div className="row g-4">
               <div className="col-md-12">
-                <label className="form-label">Main Image URL</label>
-                <input
-                  name="mainImage"
-                  className="form-control"
-                  value={form.mainImage}
-                  onChange={handleChange}
-                  placeholder="https://..."
-                  required
-                />
+                <label className="form-label">Main Image</label>
+
+                <label className="image-upload-box">
+                  {mainImagePreview ? (
+                    <>
+                      <img
+                        src={mainImagePreview}
+                        alt="Main Preview"
+                        className="main-preview"
+                      />
+                      <button
+                        type="button"
+                        className="remove-image-btn"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          removeMainImage();
+                        }}
+                      >
+                        ×
+                      </button>
+                    </>
+                  ) : (
+                    <div className="upload-placeholder">
+                      <div className="upload-icon">+</div>
+                      <h5>Upload Main Image</h5>
+                      <p>Click here and choose image from your PC</p>
+                    </div>
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleMainImage}
+                  />
+                </label>
               </div>
 
               <div className="col-md-12">
-                <label className="form-label">Gallery Images URL</label>
-                <textarea
-                  name="galleryImages"
-                  className="form-control"
-                  value={form.galleryImages}
-                  onChange={handleChange}
-                  placeholder="One image URL per line"
-                />
-                <div className="hint">Prottek line e ekta image URL diba.</div>
+                <label className="form-label">Gallery Images</label>
+
+                <label className="image-upload-box">
+                  <div className="upload-placeholder">
+                    <div className="upload-icon">+</div>
+                    <h5>Upload Gallery Images</h5>
+                    <p>You can select multiple images</p>
+                  </div>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleGalleryImages}
+                  />
+                </label>
+
+                {galleryFiles.length > 0 && (
+                  <div className="gallery-preview-grid">
+                    {galleryFiles.map((item, index) => (
+                      <div className="gallery-preview-card" key={index}>
+                        <img src={item.preview} alt={`Gallery ${index + 1}`} />
+
+                        <button
+                          type="button"
+                          className="gallery-remove-btn"
+                          onClick={() => removeGalleryImage(index)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -386,7 +592,6 @@ export default function CreateEventPackage() {
                   className="form-control"
                   value={form.minimumPeople}
                   onChange={handleChange}
-                  placeholder="Minimum 2 people"
                 />
               </div>
             </div>
@@ -396,55 +601,26 @@ export default function CreateEventPackage() {
             <div className="event-section-title">Main Content</div>
 
             <div className="row g-3">
-              <div className="col-md-12">
-                <label className="form-label">Short Description</label>
-                <textarea
-                  name="shortDescription"
-                  className="form-control"
-                  value={form.shortDescription}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="col-md-12">
-                <label className="form-label">Overview</label>
-                <textarea
-                  name="overview"
-                  className="form-control"
-                  value={form.overview}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="col-md-6">
-                <label className="form-label">Location Details</label>
-                <textarea
-                  name="locationDetails"
-                  className="form-control"
-                  value={form.locationDetails}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="col-md-6">
-                <label className="form-label">Timing Details</label>
-                <textarea
-                  name="timingDetails"
-                  className="form-control"
-                  value={form.timingDetails}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="col-md-12">
-                <label className="form-label">Description</label>
-                <textarea
-                  name="description"
-                  className="form-control"
-                  value={form.description}
-                  onChange={handleChange}
-                />
-              </div>
+              {[
+                ["shortDescription", "Short Description"],
+                ["overview", "Overview"],
+                ["locationDetails", "Location Details"],
+                ["timingDetails", "Timing Details"],
+                ["description", "Description"],
+              ].map(([name, label]) => (
+                <div
+                  className={name === "description" ? "col-md-12" : "col-md-6"}
+                  key={name}
+                >
+                  <label className="form-label">{label}</label>
+                  <textarea
+                    name={name}
+                    className="form-control"
+                    value={form[name]}
+                    onChange={handleChange}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
@@ -585,7 +761,6 @@ export default function CreateEventPackage() {
                   className="form-control"
                   value={form.mapEmbedUrl}
                   onChange={handleChange}
-                  placeholder="OpenStreetMap iframe src URL"
                 />
               </div>
             </div>
