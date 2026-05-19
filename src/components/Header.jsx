@@ -5,7 +5,7 @@ import {
   FaConciergeBell,
   FaHome,
   FaInfoCircle,
-  FaList,
+  
   FaPassport,
   FaPhoneAlt,
   FaPlane,
@@ -828,7 +828,7 @@ const fetchGuideDistricts = async (divisionId, divisionName) => {
             <FaSuitcaseRolling className="nav-icon" /> Events & Packages
           </Link>
 
-          <MainPagesDropdown />
+          
 
           <Link to="/About">
             <FaInfoCircle className="nav-icon" /> About
@@ -902,7 +902,7 @@ const fetchGuideDistricts = async (divisionId, divisionName) => {
             <FaSuitcaseRolling className="nav-icon"/> Events & Packages
           </Link>
 
-          <PagesDropdown closeMenu={closeMenu} />
+          
 
           <Link to="/About" onClick={closeMenu}>
             <FaInfoCircle className="nav-icon"/> About
@@ -923,62 +923,8 @@ const fetchGuideDistricts = async (divisionId, divisionName) => {
   )
 }
 
-function PagesDropdown({ closeMenu }) {
-  const [open, setOpen] = useState(false)
 
-  return (
-    <div>
-      <div className="sidebar-dropdown-title" onClick={() => setOpen(!open)}>
-        <div className="sidebar-dropdown-left">
-          <FaList className="nav-icon" />
-          Pages
-        </div>
-        <i
-          className={`fa fa-chevron-${open ? 'up' : 'down'}`}
-          style={{ fontSize: '0.75rem' }}
-        />
-      </div>
 
-      {open && (
-        <div className="sidebar-sub-nav">
-          <Link to="/Destination" onClick={closeMenu}>Destination</Link>
-          <Link to="/Booking" onClick={closeMenu}>Booking</Link>
-          <Link to="/Testimonial" onClick={closeMenu}>Testimonial</Link>
-          <Link to="/Error" onClick={closeMenu}>404 Page</Link>
-        </div>
-      )}
-    </div>
-  )
-}
 
-function MainPagesDropdown() {
-  const [open, setOpen] = useState(false)
-
-  return (
-    <div
-      className="main-nav-dropdown"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      <div className="main-nav-dropdown-title">
-        <FaList className="nav-icon" />
-        Pages
-        <i
-          className={`fa fa-chevron-${open ? 'up' : 'down'}`}
-          style={{ fontSize: '0.7rem' }}
-        />
-      </div>
-
-      {open && (
-        <div className="main-nav-dropdown-menu">
-          <Link to="/Destination">Destination</Link>
-          <Link to="/Booking">Booking</Link>
-          <Link to="/Testimonial">Testimonial</Link>
-          <Link to="/Error">404 Page</Link>
-        </div>
-      )}
-    </div>
-  )
-}
 
 export default Header

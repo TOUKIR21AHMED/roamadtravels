@@ -179,6 +179,61 @@ function TourismAdminDashboard() {
     </Link>
   </div>
 </div>
+<div className="col-md-6 col-lg-3">
+  <div style={cardStyle}>
+    <h4 className="mb-3">Visa Requests</h4>
+    <Link
+      to="/admin/visa-requests"
+      className="btn btn-success rounded-pill px-4"
+    >
+      Open
+    </Link>
+  </div>
+</div>
+<div className="col-md-6 col-lg-3">
+  <div style={cardStyle}>
+    <h4 className="mb-3">Home About</h4>
+    <Link
+      to="/admin/home-about"
+      className="btn btn-success rounded-pill px-4"
+    >
+      Open
+    </Link>
+  </div>
+</div>
+<div className="col-md-6 col-lg-3">
+  <div style={cardStyle}>
+    <h4 className="mb-3">Package Gallery</h4>
+    <Link
+      to="/admin/package-gallery"
+      className="btn btn-success rounded-pill px-4"
+    >
+      Open
+    </Link>
+  </div>
+</div>
+<div className="col-md-6 col-lg-3">
+  <div style={cardStyle}>
+    <h4 className="mb-3">Contact Messages</h4>
+    <Link
+      to="/admin/contact-messages"
+      className="btn btn-success rounded-pill px-4"
+    >
+      Open
+    </Link>
+  </div>
+</div>
+<div className="col-md-6 col-lg-3">
+  <div style={cardStyle}>
+    <h4 className="mb-3">Testimonials</h4>
+    <Link
+      to="/admin/testimonials"
+      className="btn btn-success rounded-pill px-4"
+    >
+      Open
+    </Link>
+  </div>
+</div>
 
         </div>
 

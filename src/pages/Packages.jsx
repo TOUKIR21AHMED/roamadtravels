@@ -25,6 +25,14 @@ const timeSlots = [
   { label: "18:00 - 00:00", value: "18-00" },
 ];
 
+// Artistic height pattern for 9 images (3 rows × 3 cols)
+// Each cell gets a height class: tall, normal, short
+const heightPattern = [
+  "tall", "normal", "short",
+  "short", "tall", "normal",
+  "normal", "short", "tall",
+];
+
 export default function EventsPackages() {
   const [items, setItems] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
@@ -43,12 +51,19 @@ export default function EventsPackages() {
   const [totalPages, setTotalPages] = useState(1);
   const limit = 8;
 
+  // Gallery state
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [activeGalleryImage, setActiveGalleryImage] = useState(null);
+
   const filteredSuggestions = useMemo(() => {
     if (!search.trim()) return suggestions.slice(0, 7);
     return suggestions
       .filter((s) => s.toLowerCase().includes(search.toLowerCase()))
       .slice(0, 7);
   }, [search, suggestions]);
+
+  const getImageUrl = (img) =>
+    img?.startsWith("http") ? img : `${API_BASE_URL}${img}`;
 
   const fetchItems = async () => {
     try {
@@ -90,8 +105,20 @@ export default function EventsPackages() {
     }
   };
 
+  const fetchGalleryImages = async () => {
+    try {
+      const res = await axios.get(
+        `${API_BASE_URL}/api/package-gallery/random?limit=9`
+      );
+      setGalleryImages((res.data || []).slice(0, 9));
+    } catch (error) {
+      console.log("Gallery fetch error:", error);
+    }
+  };
+
   useEffect(() => {
     fetchSuggestions();
+    fetchGalleryImages();
   }, []);
 
   useEffect(() => {
@@ -114,6 +141,25 @@ export default function EventsPackages() {
     setCurrency("BDT");
     setPage(1);
     setTimeout(fetchItems, 100);
+  };
+
+  // Lock body scroll when lightbox open
+  useEffect(() => {
+    if (activeGalleryImage) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [activeGalleryImage]);
+
+  const activeIndex = galleryImages.findIndex(
+    (img) => img === activeGalleryImage
+  );
+
+  const navigateGallery = (dir) => {
+    const next = (activeIndex + dir + galleryImages.length) % galleryImages.length;
+    setActiveGalleryImage(galleryImages[next]);
   };
 
   return (
@@ -451,6 +497,470 @@ export default function EventsPackages() {
           font-weight: 900;
         }
 
+        /* ─── Premium Gallery Section ─── */
+
+        .gallery-section {
+          padding: 80px 0 90px;
+          background: #ffffff;
+          position: relative;
+          overflow: hidden;
+          border-top: 1px solid #e8f0e4;
+        }
+
+        .gallery-section::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(ellipse 55% 40% at 15% 20%, rgba(39,127,13,0.05) 0%, transparent 70%),
+            radial-gradient(ellipse 45% 35% at 85% 80%, rgba(103,185,15,0.04) 0%, transparent 65%);
+          pointer-events: none;
+        }
+
+        .gallery-header {
+          text-align: center;
+          margin-bottom: 52px;
+          position: relative;
+          z-index: 1;
+        }
+
+        .gallery-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 0.78rem;
+          font-weight: 800;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: #277f0d;
+          margin-bottom: 14px;
+        }
+
+        .gallery-eyebrow::before,
+        .gallery-eyebrow::after {
+          content: '';
+          display: block;
+          width: 36px;
+          height: 1.5px;
+          background: #277f0d;
+          opacity: 0.45;
+        }
+
+        .gallery-heading {
+          font-size: 2.8rem;
+          font-weight: 900;
+          color: #1D3815;
+          line-height: 1.15;
+          margin-bottom: 14px;
+          letter-spacing: -0.02em;
+        }
+
+        .gallery-heading span {
+          background: linear-gradient(90deg, #277f0d, #55b80a);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .gallery-subtext {
+          color: #7a8f74;
+          font-size: 1rem;
+          max-width: 440px;
+          margin: 0 auto;
+          line-height: 1.7;
+        }
+
+        /* ── Mosaic grid — square cards, generous gap like reference ── */
+        .gallery-mosaic {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 28px 24px;
+          max-width: 1140px;
+          margin: 0 auto;
+          padding: 0 24px;
+          position: relative;
+          z-index: 1;
+        }
+
+        /* Each cell is a square (aspect-ratio 1/1) */
+        .gallery-cell {
+          position: relative;
+          aspect-ratio: 1 / 1;
+          cursor: pointer;
+          display: block;
+          /* Premium outer frame — layered ring effect */
+          border-radius: 6px;
+          padding: 6px;
+          background: linear-gradient(145deg, #ffffff 0%, #eef6e8 50%, #ffffff 100%);
+          box-shadow:
+            0 0 0 1px rgba(39,127,13,0.14),
+            0 8px 28px rgba(29,56,21,0.11),
+            0 2px 6px rgba(29,56,21,0.06);
+          transition:
+            box-shadow 0.42s cubic-bezier(0.23,1,0.32,1),
+            transform   0.42s cubic-bezier(0.23,1,0.32,1);
+        }
+
+        .gallery-cell:hover {
+          box-shadow:
+            0 0 0 2px rgba(39,127,13,0.55),
+            0 0 0 5px rgba(39,127,13,0.10),
+            0 24px 56px rgba(29,56,21,0.18),
+            0 6px 16px rgba(29,56,21,0.10);
+          transform: translateY(-8px) scale(1.025);
+        }
+
+        /* Inner photo container */
+        .gallery-cell-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        /* Corner decorative brackets — premium frame detail */
+        .gallery-cell::before,
+        .gallery-cell::after {
+          content: '';
+          position: absolute;
+          width: 18px;
+          height: 18px;
+          z-index: 3;
+          pointer-events: none;
+          transition: width 0.38s ease, height 0.38s ease, opacity 0.38s ease;
+          opacity: 0.55;
+        }
+        .gallery-cell::before {
+          top: -1px; left: -1px;
+          border-top: 2px solid #277f0d;
+          border-left: 2px solid #277f0d;
+          border-radius: 4px 0 0 0;
+        }
+        .gallery-cell::after {
+          bottom: -1px; right: -1px;
+          border-bottom: 2px solid #277f0d;
+          border-right: 2px solid #277f0d;
+          border-radius: 0 0 4px 0;
+        }
+        .gallery-cell:hover::before,
+        .gallery-cell:hover::after {
+          width: 28px;
+          height: 28px;
+          opacity: 1;
+        }
+
+        /* Extra corner brackets via JS-rendered spans */
+        .gallery-corner {
+          position: absolute;
+          width: 18px;
+          height: 18px;
+          z-index: 3;
+          pointer-events: none;
+          transition: width 0.38s ease, height 0.38s ease, opacity 0.38s ease;
+          opacity: 0.55;
+        }
+        .gallery-corner.tr {
+          top: -1px; right: -1px;
+          border-top: 2px solid #277f0d;
+          border-right: 2px solid #277f0d;
+          border-radius: 0 4px 0 0;
+        }
+        .gallery-corner.bl {
+          bottom: -1px; left: -1px;
+          border-bottom: 2px solid #277f0d;
+          border-left: 2px solid #277f0d;
+          border-radius: 0 0 0 4px;
+        }
+        .gallery-cell:hover .gallery-corner {
+          width: 28px;
+          height: 28px;
+          opacity: 1;
+        }
+
+        /* Image */
+        .gallery-cell img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.65s cubic-bezier(0.23, 1, 0.32, 1);
+          will-change: transform;
+        }
+
+        .gallery-cell:hover img {
+          transform: scale(1.11);
+        }
+
+        /* Gradient shine sweep on hover */
+        .gallery-shine {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            110deg,
+            transparent 30%,
+            rgba(255,255,255,0.18) 50%,
+            transparent 70%
+          );
+          transform: translateX(-100%);
+          transition: transform 0s;
+          pointer-events: none;
+          z-index: 2;
+        }
+        .gallery-cell:hover .gallery-shine {
+          transform: translateX(100%);
+          transition: transform 0.65s cubic-bezier(0.23,1,0.32,1);
+        }
+
+        /* Overlay */
+        .gallery-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            to top,
+            rgba(12, 38, 5, 0.78) 0%,
+            rgba(12, 38, 5, 0.18) 50%,
+            transparent 100%
+          );
+          opacity: 0;
+          transition: opacity 0.40s ease;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          padding: 16px 14px;
+          z-index: 2;
+        }
+        .gallery-cell:hover .gallery-overlay { opacity: 1; }
+
+        /* Zoom icon — pill style */
+        .gallery-zoom-icon {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          padding: 6px 12px;
+          background: rgba(255,255,255,0.88);
+          backdrop-filter: blur(8px);
+          border-radius: 999px;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          color: #1D3815;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          opacity: 0;
+          transform: translateY(-6px);
+          transition: opacity 0.30s ease, transform 0.30s ease;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.14);
+          z-index: 3;
+          pointer-events: none;
+        }
+        .gallery-cell:hover .gallery-zoom-icon {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        /* Image index badge */
+        .gallery-index-badge {
+          position: absolute;
+          bottom: 10px;
+          left: 10px;
+          width: 26px;
+          height: 26px;
+          background: rgba(39,127,13,0.85);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 0.68rem;
+          font-weight: 900;
+          opacity: 0;
+          transform: scale(0.6);
+          transition: opacity 0.32s ease 0.05s, transform 0.32s ease 0.05s;
+          z-index: 3;
+          pointer-events: none;
+        }
+        .gallery-cell:hover .gallery-index-badge {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        /* Caption */
+        .gallery-caption {
+          color: #fff;
+          font-size: 0.85rem;
+          font-weight: 800;
+          line-height: 1.3;
+          transform: translateY(10px);
+          opacity: 0;
+          transition: transform 0.36s ease, opacity 0.36s ease;
+        }
+        .gallery-cell:hover .gallery-caption { transform: translateY(0); opacity: 1; }
+
+        .gallery-caption-sub {
+          color: rgba(255,255,255,0.62);
+          font-size: 0.73rem;
+          font-weight: 600;
+          margin-top: 3px;
+          transform: translateY(10px);
+          opacity: 0;
+          transition: transform 0.38s ease 0.05s, opacity 0.38s ease 0.05s;
+        }
+        .gallery-cell:hover .gallery-caption-sub { transform: translateY(0); opacity: 1; }
+
+        /* Skeleton */
+        .gallery-skeleton {
+          aspect-ratio: 1/1;
+          border-radius: 6px;
+          background: linear-gradient(90deg, #eaf3e6 0%, #f8fbf6 50%, #eaf3e6 100%);
+          background-size: 200% 100%;
+          animation: gallerySkel 1.3s infinite linear;
+        }
+        @keyframes gallerySkel {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
+        /* ─── Lightbox ─── */
+        .gallery-lightbox {
+          position: fixed;
+          inset: 0;
+          background: rgba(5, 14, 3, 0.96);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: lbFadeIn 0.25s ease;
+          backdrop-filter: blur(6px);
+        }
+
+        @keyframes lbFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+
+        .gallery-lightbox-inner {
+          position: relative;
+          max-width: 88vw;
+          max-height: 88vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          animation: lbSlideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes lbSlideUp {
+          from { transform: translateY(30px); opacity: 0; }
+          to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        .gallery-lightbox-img {
+          max-width: 88vw;
+          max-height: 78vh;
+          border-radius: 20px;
+          object-fit: contain;
+          box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+          display: block;
+        }
+
+        .gallery-lightbox-caption {
+          margin-top: 18px;
+          color: rgba(255,255,255,0.8);
+          font-size: 0.92rem;
+          font-weight: 700;
+          text-align: center;
+          letter-spacing: 0.02em;
+          background: rgba(0,0,0,0.35);
+          padding: 8px 20px;
+          border-radius: 999px;
+          backdrop-filter: blur(6px);
+        }
+
+        .lb-close {
+          position: fixed;
+          top: 22px;
+          right: 26px;
+          width: 44px;
+          height: 44px;
+          background: rgba(255,255,255,0.1);
+          border: none;
+          border-radius: 50%;
+          color: white;
+          font-size: 1.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.2s;
+          backdrop-filter: blur(8px);
+          z-index: 10000;
+        }
+
+        .lb-close:hover {
+          background: rgba(255,255,255,0.22);
+        }
+
+        .lb-nav {
+          position: fixed;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 50px;
+          height: 50px;
+          background: rgba(255,255,255,0.1);
+          border: none;
+          border-radius: 50%;
+          color: white;
+          font-size: 1.1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.2s, transform 0.2s;
+          backdrop-filter: blur(8px);
+          z-index: 10000;
+        }
+
+        .lb-nav:hover {
+          background: rgba(255,255,255,0.22);
+          transform: translateY(-50%) scale(1.08);
+        }
+
+        .lb-nav.prev { left: 22px; }
+        .lb-nav.next { right: 22px; }
+
+        .lb-counter {
+          position: fixed;
+          bottom: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: rgba(255,255,255,0.45);
+          font-size: 0.82rem;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          z-index: 10000;
+        }
+
+        /* Gallery responsive */
+        @media (max-width: 768px) {
+          .gallery-mosaic {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px 14px;
+            padding: 0 14px;
+          }
+
+          .gallery-cell:nth-child(9) {
+            display: none;
+          }
+
+          .gallery-heading {
+            font-size: 2rem;
+          }
+
+          .lb-nav.prev { left: 8px; }
+          .lb-nav.next { right: 8px; }
+        }
+
         @media (max-width: 768px) {
           .events-hero h1 {
             font-size: 2rem;
@@ -524,7 +1034,7 @@ export default function EventsPackages() {
       <section className="container py-5">
         <div className="request-banner">
           <div>
-            <h3>Can’t find your perfect Tour Package?</h3>
+            <h3>Can't find your perfect Tour Package?</h3>
             <p className="mb-0">Create your own custom tour or event request.</p>
           </div>
 
@@ -675,11 +1185,7 @@ export default function EventsPackages() {
                     <div className="event-card">
                       <div className="event-img-wrap">
                         <img
-                          src={
-  item.mainImage?.startsWith("http")
-    ? item.mainImage
-    : `${API_BASE_URL}${item.mainImage}`
-}
+                          src={getImageUrl(item.mainImage)}
                           alt={item.title}
                           className="event-img"
                         />
@@ -748,6 +1254,141 @@ export default function EventsPackages() {
           </div>
         </div>
       </section>
+
+      {/* ─── Premium Gallery Section ─── */}
+      {galleryImages.length > 0 && (
+        <section className="gallery-section">
+          <div className="gallery-header">
+            <div className="gallery-eyebrow">
+              <span></span>
+              Our Gallery
+              <span></span>
+            </div>
+            <h2 className="gallery-heading">
+              Captured <span>Moments</span>
+            </h2>
+            <p className="gallery-subtext">
+              A curated glimpse into the experiences, landscapes, and memories
+              our travellers take home.
+            </p>
+          </div>
+
+          <div className="gallery-mosaic">
+            {galleryImages.map((img, i) => {
+              const title = img.title || img.caption || img.packageTitle || "";
+              const sub = img.location || img.category || "";
+              const src = getImageUrl(img.image || img.url || img.src || img);
+
+              return (
+                <div
+                  key={i}
+                  className="gallery-cell"
+                  onClick={() => setActiveGalleryImage(img)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && setActiveGalleryImage(img)}
+                  aria-label={title || `Gallery image ${i + 1}`}
+                >
+                  {/* Extra corner brackets (top-right & bottom-left) */}
+                  <span className="gallery-corner tr"></span>
+                  <span className="gallery-corner bl"></span>
+
+                  {/* Inner photo wrapper */}
+                  <div className="gallery-cell-inner">
+                    <img src={src} alt={title || `Gallery ${i + 1}`} loading="lazy" />
+
+                    {/* Shine sweep */}
+                    <div className="gallery-shine"></div>
+
+                    {/* Gradient overlay */}
+                    <div className="gallery-overlay">
+                      {title && <div className="gallery-caption">{title}</div>}
+                      {sub   && <div className="gallery-caption-sub">{sub}</div>}
+                    </div>
+
+                    {/* Zoom pill */}
+                    <div className="gallery-zoom-icon">
+                      <i className="fa fa-expand-alt"></i>
+                      VIEW
+                    </div>
+
+                    {/* Index badge */}
+                    <div className="gallery-index-badge">{i + 1}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ─── Lightbox ─── */}
+      {activeGalleryImage && (() => {
+        const img = activeGalleryImage;
+        const src = getImageUrl(img.image || img.url || img.src || img);
+        const title = img.title || img.caption || img.packageTitle || "";
+        const sub = img.location || img.category || "";
+
+        return (
+          <div
+            className="gallery-lightbox"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setActiveGalleryImage(null);
+            }}
+          >
+            {/* Close */}
+            <button
+              className="lb-close"
+              onClick={() => setActiveGalleryImage(null)}
+              aria-label="Close"
+            >
+              <i className="fa fa-times"></i>
+            </button>
+
+            {/* Prev */}
+            {galleryImages.length > 1 && (
+              <button
+                className="lb-nav prev"
+                onClick={() => navigateGallery(-1)}
+                aria-label="Previous"
+              >
+                <i className="fa fa-chevron-left"></i>
+              </button>
+            )}
+
+            <div className="gallery-lightbox-inner">
+              <img
+                className="gallery-lightbox-img"
+                src={src}
+                alt={title || "Gallery"}
+              />
+              {(title || sub) && (
+                <div className="gallery-lightbox-caption">
+                  {title && <span>{title}</span>}
+                  {title && sub && <span> &middot; </span>}
+                  {sub && <span style={{ opacity: 0.65 }}>{sub}</span>}
+                </div>
+              )}
+            </div>
+
+            {/* Next */}
+            {galleryImages.length > 1 && (
+              <button
+                className="lb-nav next"
+                onClick={() => navigateGallery(1)}
+                aria-label="Next"
+              >
+                <i className="fa fa-chevron-right"></i>
+              </button>
+            )}
+
+            {/* Counter */}
+            <div className="lb-counter">
+              {activeIndex + 1} / {galleryImages.length}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

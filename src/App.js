@@ -66,6 +66,11 @@ import EventPackageDetails from "./pages/EventPackageDetails";
 import EventPackageRequest from "./pages/EventPackageRequest";
 import ManageEventRequests from "./pages/ManageEventRequests";
 import FlightRequestsAdmin from "./pages/FlightRequestsAdmin";
+import VisaRequestsAdmin from "./pages/VisaRequestsAdmin";
+import AdminHomeAbout from "./pages/AdminHomeAbout";
+import AdminPackageGallery from "./pages/AdminPackageGallery";
+import ContactMessagesAdmin from "./pages/ContactMessagesAdmin";
+import AdminTestimonials from "./pages/AdminTestimonials";
 
 export default function App() {
 
@@ -163,6 +168,38 @@ export default function App() {
         "tourism_admin",
       ]}
     ><FlightRequestsAdmin /></ProtectedRoute>} />
+<Route path="/admin/visa-requests" element={ <ProtectedRoute
+  allowedRoles={[
+    "super_admin",
+    "tourism_admin",
+  ]}
+><VisaRequestsAdmin /></ProtectedRoute>} />
+<Route
+  path="/admin/home-about"
+  element={
+    <ProtectedRoute
+      allowedRoles={["super_admin", "tourism_admin"]}
+    >
+      <AdminHomeAbout />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/package-gallery"
+  element={
+    <ProtectedRoute allowedRoles={["super_admin", "tourism_admin"]}>
+      <AdminPackageGallery />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/contact-messages"
+  element={
+    <ProtectedRoute allowedRoles={["super_admin", "tourism_admin"]}>
+      <ContactMessagesAdmin />
+    </ProtectedRoute>
+  }
+/>
         {/* SUPER ADMIN */}
 
         <Route
@@ -191,7 +228,14 @@ export default function App() {
     </ProtectedRoute>
   }
 />
-
+<Route
+  path="/admin/testimonials"
+  element={
+    <ProtectedRoute allowedRoles={["super_admin", "tourism_admin"]}>
+      <AdminTestimonials />
+    </ProtectedRoute>
+  }
+/>
 
         {/* SHOP ADMIN */}
 

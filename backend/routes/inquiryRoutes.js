@@ -89,6 +89,9 @@ router.post("/", upload.array("documents", 10), async (req, res) => {
             <p><b>Destination:</b> ${req.body.destination || "N/A"}</p>
             <p><b>Travel Date:</b> ${req.body.travelDate || "N/A"}</p>
             <p><b>Return Date:</b> ${req.body.returnDate || "N/A"}</p>
+            <p><b>Visa Type:</b> ${req.body.visaType || "N/A"}</p>
+<p><b>Processing Type:</b> ${req.body.processingType || "N/A"}</p>
+<p><b>Passport Number:</b> ${req.body.passportNumber || "N/A"}</p>
             <p><b>Message:</b> ${req.body.message || "N/A"}</p>
             <p><b>Documents:</b> ${uploadedDocuments.length} file(s) uploaded</p>
           `,

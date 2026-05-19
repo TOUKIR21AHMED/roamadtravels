@@ -8,10 +8,37 @@ export default function Home() {
 const [homePackages, setHomePackages] = useState([]);
   const [randomPlaces, setRandomPlaces] = useState([]);
 const [activePlace, setActivePlace] = useState(null);
+const [homeAbout, setHomeAbout] = useState(null);
+const [testimonials, setTestimonials] = useState([]);
 const getImageUrl = (img) => {
   if (!img) return "";
   return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
 };
+useEffect(() => {
+  const fetchHomeAbout = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/home-about`);
+      setHomeAbout(res.data);
+    } catch (error) {
+      console.log("Home about fetch error:", error);
+    }
+  };
+
+  fetchHomeAbout();
+}, []);
+
+useEffect(() => {
+  const fetchTestimonials = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/testimonials/active`);
+      setTestimonials(res.data || []);
+    } catch (error) {
+      console.log("Testimonials fetch error:", error);
+    }
+  };
+
+  fetchTestimonials();
+}, []);
 
 useEffect(() => {
   const fetchRandomPlaces = async () => {
@@ -77,86 +104,64 @@ useEffect(() => {
           </div>
         </div>
       </div>
-            {/* About Start */}
-    <div className="container-xxl py-5">
-      <div className="container">
-        <div className="row g-5">
-          <div
-            className="col-lg-6 wow fadeInUp"
-            data-wow-delay="0.1s"
-            style={{ minHeight: 400 }}
+      {/* About Start */}
+{homeAbout && (
+  <div className="container-xxl py-5">
+    <div className="container">
+      <div className="row g-5">
+        <div
+          className="col-lg-6 wow fadeInUp"
+          data-wow-delay="0.1s"
+          style={{ minHeight: 400 }}
+        >
+          <div className="position-relative h-100">
+            <img
+              className="img-fluid position-absolute w-100 h-100"
+              src={getImageUrl(homeAbout.image) || "assets/img/about.jpg"}
+              alt="About"
+              style={{ objectFit: "cover" }}
+            />
+          </div>
+        </div>
+
+        <div className="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
+          <h6 className="section-title bg-white text-start text-primary pe-3">
+            {homeAbout.sectionLabel}
+          </h6>
+
+          <h1 className="mb-4">
+            {homeAbout.titleBeforeHighlight}{" "}
+            <span className="text-primary">
+              {homeAbout.highlightedTitle}
+            </span>
+          </h1>
+
+          <p className="mb-4">{homeAbout.paragraphOne}</p>
+          <p className="mb-4">{homeAbout.paragraphTwo}</p>
+
+          <div className="row gy-2 gx-4 mb-4">
+            {(homeAbout.features || []).map((feature, index) => (
+              <div className="col-sm-6" key={index}>
+                <p className="mb-0">
+                  <i className="fa fa-arrow-right text-primary me-2" />
+                  {feature}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <Link
+            className="btn btn-primary py-3 px-5 mt-2"
+            to={homeAbout.buttonLink || "/about"}
           >
-            <div className="position-relative h-100">
-              <img
-                className="img-fluid position-absolute w-100 h-100"
-                src="assets/img/about.jpg"
-                alt=""
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-          </div>
-          <div className="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
-            <h6 className="section-title bg-white text-start text-primary pe-3">
-              About Us
-            </h6>
-            <h1 className="mb-4">
-              Welcome to <span className="text-primary">Tourist</span>
-            </h1>
-            <p className="mb-4">
-              Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit. Aliqu
-              diam amet diam et eos. Clita erat ipsum et lorem et sit.
-            </p>
-            <p className="mb-4">
-              Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit. Aliqu
-              diam amet diam et eos. Clita erat ipsum et lorem et sit, sed stet
-              lorem sit clita duo justo magna dolore erat amet
-            </p>
-            <div className="row gy-2 gx-4 mb-4">
-              <div className="col-sm-6">
-                <p className="mb-0">
-                  <i className="fa fa-arrow-right text-primary me-2" />
-                  First Class Flights
-                </p>
-              </div>
-              <div className="col-sm-6">
-                <p className="mb-0">
-                  <i className="fa fa-arrow-right text-primary me-2" />
-                  Handpicked Hotels
-                </p>
-              </div>
-              <div className="col-sm-6">
-                <p className="mb-0">
-                  <i className="fa fa-arrow-right text-primary me-2" />5 Star
-                  Accommodations
-                </p>
-              </div>
-              <div className="col-sm-6">
-                <p className="mb-0">
-                  <i className="fa fa-arrow-right text-primary me-2" />
-                  Latest Model Vehicles
-                </p>
-              </div>
-              <div className="col-sm-6">
-                <p className="mb-0">
-                  <i className="fa fa-arrow-right text-primary me-2" />
-                  150 Premium City Tours
-                </p>
-              </div>
-              <div className="col-sm-6">
-                <p className="mb-0">
-                  <i className="fa fa-arrow-right text-primary me-2" />
-                  24/7 Service
-                </p>
-              </div>
-            </div>
-            <a className="btn btn-primary py-3 px-5 mt-2" href="">
-              Read More
-            </a>
-          </div>
+            {homeAbout.buttonText || "Read More"}
+          </Link>
         </div>
       </div>
     </div>
-    {/* About End */}
+  </div>
+)}
+{/* About End */}
 
     {/* Random Tourist Places Start */}
 <style>{`
@@ -759,260 +764,342 @@ useEffect(() => {
 </div>
 {/* Package End */}
     
-    {/* Process Start */}
-    <div className="container-xxl py-5">
-      <div className="container">
-        <div className="text-center pb-4 wow fadeInUp" data-wow-delay="0.1s">
-          <h6 className="section-title bg-white text-center text-primary px-3">
-            Process
-          </h6>
-          <h1 className="mb-5">3 Easy Steps</h1>
+{/* Process Start */}
+<div className="container-xxl py-5">
+  <div className="container">
+    <div className="text-center pb-4 wow fadeInUp" data-wow-delay="0.1s">
+      <h6 className="section-title bg-white text-center text-primary px-3">
+        How It Works
+      </h6>
+
+      <h1 className="mb-4" style={{ fontWeight: "900", color: "#1D3815" }}>
+        Your Journey In 3 Simple Steps
+      </h1>
+
+      <p
+        style={{
+          maxWidth: "750px",
+          margin: "0 auto",
+          color: "#667063",
+          lineHeight: "1.9",
+        }}
+      >
+        ROAMAD TRAVELS BD makes your travel experience simple, fast and
+        premium — from planning to destination.
+      </p>
+    </div>
+
+    <div className="row gy-5 gx-4 justify-content-center">
+      {/* Step 1 */}
+      <div
+        className="col-lg-4 col-sm-6 text-center pt-4 wow fadeInUp"
+        data-wow-delay="0.1s"
+      >
+        <div
+          className="position-relative pt-5 pb-4 px-4"
+          style={{
+            background: "#fff",
+            borderRadius: "30px",
+            border: "1px solid rgba(39,127,13,0.1)",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
+            transition: "0.35s ease",
+            height: "100%",
+          }}
+        >
+          <div
+            className="d-inline-flex align-items-center justify-content-center rounded-circle position-absolute top-0 start-50 translate-middle shadow"
+            style={{
+              width: 100,
+              height: 100,
+              background: "linear-gradient(135deg, #1D3815, #66b80f)",
+            }}
+          >
+            <i className="fa fa-map-marked-alt fa-3x text-white" />
+          </div>
+
+          <h5
+            className="mt-4"
+            style={{
+              fontWeight: "800",
+              color: "#1D3815",
+            }}
+          >
+            Choose Your Destination
+          </h5>
+
+          <hr className="w-25 mx-auto bg-primary mb-1" />
+          <hr className="w-50 mx-auto bg-primary mt-0" />
+
+          <p
+            className="mb-0"
+            style={{
+              color: "#667063",
+              lineHeight: "1.9",
+            }}
+          >
+            Explore premium tour packages, travel destinations, visa support,
+            flights and personalized event experiences from our smart tourism
+            platform.
+          </p>
         </div>
-        <div className="row gy-5 gx-4 justify-content-center">
+      </div>
+
+      {/* Step 2 */}
+      <div
+        className="col-lg-4 col-sm-6 text-center pt-4 wow fadeInUp"
+        data-wow-delay="0.3s"
+      >
+        <div
+          className="position-relative pt-5 pb-4 px-4"
+          style={{
+            background: "#fff",
+            borderRadius: "30px",
+            border: "1px solid rgba(39,127,13,0.1)",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
+            transition: "0.35s ease",
+            height: "100%",
+          }}
+        >
           <div
-            className="col-lg-4 col-sm-6 text-center pt-4 wow fadeInUp"
-            data-wow-delay="0.1s"
+            className="d-inline-flex align-items-center justify-content-center rounded-circle position-absolute top-0 start-50 translate-middle shadow"
+            style={{
+              width: 100,
+              height: 100,
+              background: "linear-gradient(135deg, #1D3815, #66b80f)",
+            }}
           >
-            <div className="position-relative border border-primary pt-5 pb-4 px-4">
-              <div
-                className="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle position-absolute top-0 start-50 translate-middle shadow"
-                style={{ width: 100, height: 100 }}
-              >
-                <i className="fa fa-globe fa-3x text-white" />
-              </div>
-              <h5 className="mt-4">Choose A Destination</h5>
-              <hr className="w-25 mx-auto bg-primary mb-1" />
-              <hr className="w-50 mx-auto bg-primary mt-0" />
-              <p className="mb-0">
-                Tempor erat elitr rebum clita dolor diam ipsum sit diam amet
-                diam eos erat ipsum et lorem et sit sed stet lorem sit
-              </p>
-            </div>
+            <i className="fa fa-file-signature fa-3x text-white" />
           </div>
+
+          <h5
+            className="mt-4"
+            style={{
+              fontWeight: "800",
+              color: "#1D3815",
+            }}
+          >
+            Submit Your Request
+          </h5>
+
+          <hr className="w-25 mx-auto bg-primary mb-1" />
+          <hr className="w-50 mx-auto bg-primary mt-0" />
+
+          <p
+            className="mb-0"
+            style={{
+              color: "#667063",
+              lineHeight: "1.9",
+            }}
+          >
+            Fill up your flight, visa or custom event request form and upload
+            required documents securely through our modern digital system.
+          </p>
+        </div>
+      </div>
+
+      {/* Step 3 */}
+      <div
+        className="col-lg-4 col-sm-6 text-center pt-4 wow fadeInUp"
+        data-wow-delay="0.5s"
+      >
+        <div
+          className="position-relative pt-5 pb-4 px-4"
+          style={{
+            background: "#fff",
+            borderRadius: "30px",
+            border: "1px solid rgba(39,127,13,0.1)",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
+            transition: "0.35s ease",
+            height: "100%",
+          }}
+        >
           <div
-            className="col-lg-4 col-sm-6 text-center pt-4 wow fadeInUp"
-            data-wow-delay="0.3s"
+            className="d-inline-flex align-items-center justify-content-center rounded-circle position-absolute top-0 start-50 translate-middle shadow"
+            style={{
+              width: 100,
+              height: 100,
+              background: "linear-gradient(135deg, #1D3815, #66b80f)",
+            }}
           >
-            <div className="position-relative border border-primary pt-5 pb-4 px-4">
-              <div
-                className="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle position-absolute top-0 start-50 translate-middle shadow"
-                style={{ width: 100, height: 100 }}
-              >
-                <i className="fa fa-dollar-sign fa-3x text-white" />
-              </div>
-              <h5 className="mt-4">Pay Online</h5>
-              <hr className="w-25 mx-auto bg-primary mb-1" />
-              <hr className="w-50 mx-auto bg-primary mt-0" />
-              <p className="mb-0">
-                Tempor erat elitr rebum clita dolor diam ipsum sit diam amet
-                diam eos erat ipsum et lorem et sit sed stet lorem sit
-              </p>
-            </div>
+            <i className="fa fa-plane-departure fa-3x text-white" />
           </div>
-          <div
-            className="col-lg-4 col-sm-6 text-center pt-4 wow fadeInUp"
-            data-wow-delay="0.5s"
+
+          <h5
+            className="mt-4"
+            style={{
+              fontWeight: "800",
+              color: "#1D3815",
+            }}
           >
-            <div className="position-relative border border-primary pt-5 pb-4 px-4">
-              <div
-                className="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle position-absolute top-0 start-50 translate-middle shadow"
-                style={{ width: 100, height: 100 }}
-              >
-                <i className="fa fa-plane fa-3x text-white" />
-              </div>
-              <h5 className="mt-4">Fly Today</h5>
-              <hr className="w-25 mx-auto bg-primary mb-1" />
-              <hr className="w-50 mx-auto bg-primary mt-0" />
-              <p className="mb-0">
-                Tempor erat elitr rebum clita dolor diam ipsum sit diam amet
-                diam eos erat ipsum et lorem et sit sed stet lorem sit
-              </p>
-            </div>
-          </div>
+            Enjoy Your Journey
+          </h5>
+
+          <hr className="w-25 mx-auto bg-primary mb-1" />
+          <hr className="w-50 mx-auto bg-primary mt-0" />
+
+          <p
+            className="mb-0"
+            style={{
+              color: "#667063",
+              lineHeight: "1.9",
+            }}
+          >
+            Our team handles the processing while you prepare for an amazing
+            travel experience with premium support and trusted service.
+          </p>
         </div>
       </div>
     </div>
-    {/* Process Start */}
-    {/* Team Start */}
-    <div className="container-xxl py-5">
-      <div className="container">
-        <div className="text-center wow fadeInUp" data-wow-delay="0.1s">
-          <h6 className="section-title bg-white text-center text-primary px-3">
-            Travel Guide
-          </h6>
-          <h1 className="mb-5">Meet Our Guide</h1>
-        </div>
-        <div className="row g-4">
-          <div className="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-            <div className="team-item">
-              <div className="overflow-hidden">
-                <img className="img-fluid" src="assets/img/team-1.jpg" alt="" />
+  </div>
+</div>
+{/* Process End */}
+    
+{/* Testimonial Start */}
+{testimonials.length > 0 && (
+  <>
+    <style>{`
+      .premium-testimonial-section {
+        background:
+          radial-gradient(circle at top left, rgba(39,127,13,0.13), transparent 35%),
+          linear-gradient(180deg, #ffffff 0%, #f4f8f2 100%);
+        overflow: hidden;
+      }
+
+      .testimonial-marquee-wrap {
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .testimonial-marquee-track {
+        display: flex;
+        gap: 24px;
+        width: max-content;
+        animation: testimonialMarquee 38s linear infinite;
+      }
+
+      .testimonial-marquee-wrap:hover .testimonial-marquee-track {
+        animation-play-state: paused;
+      }
+
+      @keyframes testimonialMarquee {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+      }
+
+      .premium-testimonial-card {
+        width: 380px;
+        min-height: 300px;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(39,127,13,0.12);
+        border-radius: 32px;
+        padding: 28px;
+        box-shadow: 0 22px 60px rgba(0,0,0,0.09);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .premium-testimonial-card::before {
+        content: "“";
+        position: absolute;
+        top: -35px;
+        right: 24px;
+        font-size: 140px;
+        line-height: 1;
+        color: rgba(39,127,13,0.08);
+        font-family: serif;
+      }
+
+      .testimonial-client-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .testimonial-client-img {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #eef8ea;
+        box-shadow: 0 10px 25px rgba(39,127,13,0.18);
+      }
+
+      .testimonial-stars {
+        color: #ffc107;
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+      }
+
+      .testimonial-message {
+        color: #5b6557;
+        line-height: 1.8;
+        font-size: 0.98rem;
+      }
+
+      @media (max-width: 576px) {
+        .premium-testimonial-card {
+          width: 310px;
+          padding: 22px;
+        }
+
+        .testimonial-marquee-track {
+          gap: 16px;
+          animation-duration: 28s;
+        }
+      }
+    `}</style>
+
+    <div className="container-xxl py-5 premium-testimonial-section">
+      <div className="container text-center mb-5">
+        <h6 className="section-title bg-white text-center text-primary px-3">
+          Testimonial
+        </h6>
+
+        <h1 className="mb-3" style={{ fontWeight: 900, color: "#1D3815" }}>
+          Our Clients Say
+        </h1>
+
+        <p className="text-muted">
+          Real experiences from our happy travelers and clients.
+        </p>
+      </div>
+
+      <div className="testimonial-marquee-wrap">
+        <div className="testimonial-marquee-track">
+          {[...testimonials, ...testimonials].map((item, index) => (
+            <div className="premium-testimonial-card" key={`${item._id}-${index}`}>
+              <div className="testimonial-client-row">
+                <img
+                  src={getImageUrl(item.image) || "/assets/img/user.png"}
+                  alt={item.name}
+                  className="testimonial-client-img"
+                />
+
+                <div>
+                  <h5 className="mb-1" style={{ color: "#1D3815", fontWeight: 900 }}>
+                    {item.name}
+                  </h5>
+                  <p className="mb-0 text-muted">{item.location}</p>
+                </div>
               </div>
-              <div
-                className="position-relative d-flex justify-content-center"
-                style={{ marginTop: "-19px" }}
-              >
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-facebook-f" />
-                </a>
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-twitter" />
-                </a>
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-instagram" />
-                </a>
+
+              <div className="testimonial-stars">
+                {Array.from({ length: Number(item.rating || 5) }).map((_, i) => (
+                  <i className="fa fa-star me-1" key={i}></i>
+                ))}
               </div>
-              <div className="text-center p-4">
-                <h5 className="mb-0">Full Name</h5>
-                <small>Designation</small>
-              </div>
+
+              <p className="testimonial-message">“{item.message}”</p>
             </div>
-          </div>
-          <div className="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
-            <div className="team-item">
-              <div className="overflow-hidden">
-                <img className="img-fluid" src="assets/img/team-2.jpg" alt="" />
-              </div>
-              <div
-                className="position-relative d-flex justify-content-center"
-                style={{ marginTop: "-19px" }}
-              >
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-facebook-f" />
-                </a>
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-twitter" />
-                </a>
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-instagram" />
-                </a>
-              </div>
-              <div className="text-center p-4">
-                <h5 className="mb-0">Full Name</h5>
-                <small>Designation</small>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.5s">
-            <div className="team-item">
-              <div className="overflow-hidden">
-                <img className="img-fluid" src="assets/img/team-3.jpg" alt="" />
-              </div>
-              <div
-                className="position-relative d-flex justify-content-center"
-                style={{ marginTop: "-19px" }}
-              >
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-facebook-f" />
-                </a>
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-twitter" />
-                </a>
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-instagram" />
-                </a>
-              </div>
-              <div className="text-center p-4">
-                <h5 className="mb-0">Full Name</h5>
-                <small>Designation</small>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.7s">
-            <div className="team-item">
-              <div className="overflow-hidden">
-                <img className="img-fluid" src="assets/img/team-4.jpg" alt="" />
-              </div>
-              <div
-                className="position-relative d-flex justify-content-center"
-                style={{ marginTop: "-19px" }}
-              >
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-facebook-f" />
-                </a>
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-twitter" />
-                </a>
-                <a className="btn btn-square mx-1" href="">
-                  <i className="fab fa-instagram" />
-                </a>
-              </div>
-              <div className="text-center p-4">
-                <h5 className="mb-0">Full Name</h5>
-                <small>Designation</small>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
-    {/* Team End */}
-    {/* Testimonial Start */}
-    <div className="container-xxl py-5 wow fadeInUp" data-wow-delay="0.1s">
-      <div className="container">
-        <div className="text-center">
-          <h6 className="section-title bg-white text-center text-primary px-3">
-            Testimonial
-          </h6>
-          <h1 className="mb-5">Our Clients Say!!!</h1>
-        </div>
-        <div className="owl-carousel testimonial-carousel position-relative">
-          <div className="testimonial-item bg-white text-center border p-4">
-            <img
-              className="bg-white rounded-circle shadow p-1 mx-auto mb-3"
-              src="assets/img/testimonial-1.jpg"
-              style={{ width: 80, height: 80 }}
-            />
-            <h5 className="mb-0">John Doe</h5>
-            <p>New York, USA</p>
-            <p className="mb-0">
-              Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam
-              amet diam et eos. Clita erat ipsum et lorem et sit.
-            </p>
-          </div>
-          <div className="testimonial-item bg-white text-center border p-4">
-            <img
-              className="bg-white rounded-circle shadow p-1 mx-auto mb-3"
-              src="assets/img/testimonial-2.jpg"
-              style={{ width: 80, height: 80 }}
-            />
-            <h5 className="mb-0">John Doe</h5>
-            <p>New York, USA</p>
-            <p className="mt-2 mb-0">
-              Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam
-              amet diam et eos. Clita erat ipsum et lorem et sit.
-            </p>
-          </div>
-          <div className="testimonial-item bg-white text-center border p-4">
-            <img
-              className="bg-white rounded-circle shadow p-1 mx-auto mb-3"
-              src="assets/img/testimonial-3.jpg"
-              style={{ width: 80, height: 80 }}
-            />
-            <h5 className="mb-0">John Doe</h5>
-            <p>New York, USA</p>
-            <p className="mt-2 mb-0">
-              Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam
-              amet diam et eos. Clita erat ipsum et lorem et sit.
-            </p>
-          </div>
-          <div className="testimonial-item bg-white text-center border p-4">
-            <img
-              className="bg-white rounded-circle shadow p-1 mx-auto mb-3"
-              src="assets/img/testimonial-4.jpg"
-              style={{ width: 80, height: 80 }}
-            />
-            <h5 className="mb-0">John Doe</h5>
-            <p>New York, USA</p>
-            <p className="mt-2 mb-0">
-              Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam
-              amet diam et eos. Clita erat ipsum et lorem et sit.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-    {/* Testimonial End */}  
+  </>
+)}
+{/* Testimonial End */} 
     </div>
   )
 }

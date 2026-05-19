@@ -16,7 +16,10 @@ const adminAuthRoutes = require("./routes/adminAuthRoutes");
 const inquiryRoutes = require("./routes/inquiryRoutes");
 const eventPackageRoutes = require("./routes/eventPackageRoutes");
 const eventRequestRoutes = require("./routes/eventRequestRoutes");
-
+const homeAboutRoutes = require("./routes/homeAboutRoutes");
+const packageGalleryRoutes = require("./routes/packageGalleryRoutes");
+const contactMessageRoutes = require("./routes/contactMessageRoutes");
+const testimonialRoutes = require("./routes/testimonialRoutes");
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -52,7 +55,10 @@ app.use("/api/admin-auth", adminAuthRoutes);
 app.use("/api/inquiries", inquiryRoutes);
 app.use("/api/event-packages", eventPackageRoutes);
 app.use("/api/event-requests", eventRequestRoutes);
-
+app.use("/api/home-about", homeAboutRoutes);
+app.use("/api/package-gallery", packageGalleryRoutes);
+app.use("/api/contact-messages", contactMessageRoutes);
+app.use("/api/testimonials", testimonialRoutes);
 app.get("/", (req, res) => {
   res.send("Travel Guide API running 🚀");
 });
