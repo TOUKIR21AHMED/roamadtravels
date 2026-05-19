@@ -125,7 +125,7 @@ export default function Footer() {
 
             <div className="col-lg-3 col-md-6">
               <h4 className="text-white mb-3">Newsletter</h4>
-              <p>Dolor amet sit justo amet elitr clita ipsum elitr est.</p>
+              <p>For Query.</p>
               <div className="position-relative mx-auto" style={{ maxWidth: 400 }}>
                 <input
                   className="form-control border-primary w-100 py-3 ps-4 pe-5"
@@ -149,19 +149,19 @@ export default function Footer() {
               <div className="col-md-6 text-center text-md-start mb-3 mb-md-0">
                 ©{" "}
                 <a className="border-bottom" href="javascript:void(0)">
-                  Your Site Name
+                  Tourviz
                 </a>
                 , All Right Reserved. Designed By{" "}
-                <a className="border-bottom" href="https://github.com/ParasSalunke">
-                  Paras Salunke
+                <a className="border-bottom" href="https://www.linkedin.com/in/toukir-ahmed-w2001/">
+                  Toukir Ahmed
                 </a>
               </div>
               <div className="col-md-6 text-center text-md-end">
                 <div className="footer-menu">
                   <a href="/">Home</a>
                   <a href="/">Cookies</a>
-                  <a href="/">Help</a>
-                  <a href="/">FQAs</a>
+                  <a href="/Contact">Help</a>
+                  <a href="/Contact">FQAs</a>
                 </div>
               </div>
             </div>
