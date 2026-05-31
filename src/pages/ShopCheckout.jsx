@@ -1,15 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
-const getImageUrl = (img) => {
-  if (!img) return "";
-
-  return img.startsWith("http")
-    ? img
-    : `${API_BASE_URL}${img}`;
-};
+const getImageUrl = (img) => resolveImageUrl(img);
 const ShopCheckout = () => {
   const [cartItems, setCartItems] = useState([]);
   const [showPayment, setShowPayment] = useState(false);

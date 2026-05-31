@@ -1,42 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
+const mongoose = require("mongoose");
 
 const Product = require("../models/Product");
 const ProductCategory = require("../models/ProductCategory");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/products");
-  },
-
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-
-    cb(null, uniqueName);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"), false);
-  }
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 20 * 1024 * 1024,
-  },
-});
+const {
+  imageUpload,
+  runMiddleware,
+  uploadSingleImage,
+} = require("../utils/uploadToCloudinary");
 
 // GET all products
 router.get("/", async (req, res) => {
@@ -116,8 +88,10 @@ router.get("/:id", async (req, res) => {
 });
 
 // CREATE product with image upload
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", async (req, res) => {
   try {
+    await runMiddleware(imageUpload.single("image"), req, res);
+
     const {
       categoryId,
       name,
@@ -128,17 +102,32 @@ router.post("/", upload.single("image"), async (req, res) => {
       status,
     } = req.body;
 
-    const image = req.file
-      ? `/uploads/products/${req.file.filename}`
-      : "";
+    const cleanCategoryId = String(categoryId || "").trim();
+    const cleanName = String(name || "").trim();
+    const cleanSlug = String(slug || "").trim().toLowerCase();
+    const cleanDetails = String(details || "").trim();
+    const parsedPrice = Number(price);
+    const parsedStock = Number(stock || 0);
+
+    if (!mongoose.Types.ObjectId.isValid(cleanCategoryId)) {
+      return res.status(400).json({
+        message: "Invalid category selected",
+      });
+    }
+
+    const uploadedImage = req.file
+      ? await uploadSingleImage(req.file, "roamad-travels/products")
+      : null;
+
+    const image = uploadedImage?.secure_url || "";
 
     if (
-      !categoryId ||
-      !name ||
-      !slug ||
+      !cleanCategoryId ||
+      !cleanName ||
+      !cleanSlug ||
       !image ||
-      price === undefined ||
-      !details
+      !Number.isFinite(parsedPrice) ||
+      !cleanDetails
     ) {
       return res.status(400).json({
         message:
@@ -146,7 +135,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       });
     }
 
-    const categoryExists = await ProductCategory.findById(categoryId);
+    const categoryExists = await ProductCategory.findById(cleanCategoryId);
 
     if (!categoryExists) {
       return res.status(400).json({
@@ -155,7 +144,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     }
 
     const existingSlug = await Product.findOne({
-      slug: slug.trim().toLowerCase(),
+      slug: cleanSlug,
     });
 
     if (existingSlug) {
@@ -165,13 +154,13 @@ router.post("/", upload.single("image"), async (req, res) => {
     }
 
     const product = new Product({
-      categoryId,
-      name: name.trim(),
-      slug: slug.trim().toLowerCase(),
+      categoryId: cleanCategoryId,
+      name: cleanName,
+      slug: cleanSlug,
       image,
-      price: Number(price),
-      details: details.trim(),
-      stock: Number(stock || 0),
+      price: parsedPrice,
+      details: cleanDetails,
+      stock: Number.isFinite(parsedStock) ? parsedStock : 0,
       status: status || "active",
     });
 
@@ -183,6 +172,8 @@ router.post("/", upload.single("image"), async (req, res) => {
 
     res.status(201).json(populatedProduct);
   } catch (error) {
+    console.error("Product create error:", error);
+    console.error("Product create error message:", error.message);
     res.status(500).json({
       message: "Failed to create product",
       error: error.message,
@@ -191,8 +182,10 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 // UPDATE product
-router.put("/:id", upload.single("image"), async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
+    await runMiddleware(imageUpload.single("image"), req, res);
+
     const {
       categoryId,
       name,
@@ -203,6 +196,13 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       status,
     } = req.body;
 
+    const cleanCategoryId = categoryId ? String(categoryId).trim() : "";
+    const cleanName = name ? String(name).trim() : "";
+    const cleanSlug = slug ? String(slug).trim().toLowerCase() : "";
+    const cleanDetails = details ? String(details).trim() : "";
+    const parsedPrice = price !== undefined ? Number(price) : undefined;
+    const parsedStock = stock !== undefined ? Number(stock) : undefined;
+
     const product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -211,8 +211,14 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       });
     }
 
-    if (categoryId) {
-      const categoryExists = await ProductCategory.findById(categoryId);
+    if (cleanCategoryId) {
+      if (!mongoose.Types.ObjectId.isValid(cleanCategoryId)) {
+        return res.status(400).json({
+          message: "Invalid category selected",
+        });
+      }
+
+      const categoryExists = await ProductCategory.findById(cleanCategoryId);
 
       if (!categoryExists) {
         return res.status(400).json({
@@ -220,14 +226,14 @@ router.put("/:id", upload.single("image"), async (req, res) => {
         });
       }
 
-      product.categoryId = categoryId;
+      product.categoryId = cleanCategoryId;
     }
 
-    if (name) product.name = name.trim();
+    if (cleanName) product.name = cleanName;
 
-    if (slug) {
+    if (cleanSlug) {
       const existingSlug = await Product.findOne({
-        slug: slug.trim().toLowerCase(),
+        slug: cleanSlug,
         _id: { $ne: req.params.id },
       });
 
@@ -237,23 +243,40 @@ router.put("/:id", upload.single("image"), async (req, res) => {
         });
       }
 
-      product.slug = slug.trim().toLowerCase();
+      product.slug = cleanSlug;
     }
 
     if (req.file) {
-      product.image = `/uploads/products/${req.file.filename}`;
+      const uploadedImage = await uploadSingleImage(
+        req.file,
+        "roamad-travels/products"
+      );
+
+      product.image = uploadedImage?.secure_url || "";
     }
 
-    if (price !== undefined) {
-      product.price = Number(price);
+    if (parsedPrice !== undefined) {
+      if (!Number.isFinite(parsedPrice)) {
+        return res.status(400).json({
+          message: "Price must be a valid number",
+        });
+      }
+
+      product.price = parsedPrice;
     }
 
-    if (details) {
-      product.details = details.trim();
+    if (cleanDetails) {
+      product.details = cleanDetails;
     }
 
-    if (stock !== undefined) {
-      product.stock = Number(stock);
+    if (parsedStock !== undefined) {
+      if (!Number.isFinite(parsedStock)) {
+        return res.status(400).json({
+          message: "Stock must be a valid number",
+        });
+      }
+
+      product.stock = parsedStock;
     }
 
     if (status) {
@@ -268,6 +291,8 @@ router.put("/:id", upload.single("image"), async (req, res) => {
 
     res.json(populatedProduct);
   } catch (error) {
+    console.error("Product update error:", error);
+    console.error("Product update error message:", error.message);
     res.status(500).json({
       message: "Failed to update product",
       error: error.message,

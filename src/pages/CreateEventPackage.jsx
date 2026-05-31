@@ -128,9 +128,6 @@ export default function CreateEventPackage() {
         formData.append("galleryImages", item.file);
       });
 
-formData.append("priceBdt", form.priceBdt || 0);
-formData.append("priceUsd", form.priceUsd || 0);
-
       formData.append("inclusions", JSON.stringify(splitLines(form.inclusions)));
       formData.append("exclusions", JSON.stringify(splitLines(form.exclusions)));
       formData.append("requirements", JSON.stringify(splitLines(form.requirements)));

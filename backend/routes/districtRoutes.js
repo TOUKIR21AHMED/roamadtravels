@@ -1,39 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
 const District = require("../models/District");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/districts");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-
-    cb(null, uniqueName);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"), false);
-  }
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 20 * 1024 * 1024,
-  },
-});
+const {
+  imageUpload,
+  runMiddleware,
+  uploadSingleImage,
+} = require("../utils/uploadToCloudinary");
 
 // GET all districts
 router.get("/", async (req, res) => {
@@ -89,9 +61,15 @@ router.get("/slug/:slug", async (req, res) => {
 });
 
 // CREATE district with image upload
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const image = req.file ? `/uploads/districts/${req.file.filename}` : "";
+    await runMiddleware(imageUpload.single("image"), req, res);
+
+    const uploadedImage = req.file
+      ? await uploadSingleImage(req.file, "roamad-travels/districts")
+      : null;
+
+    const image = uploadedImage?.secure_url || "";
 
     const newDistrict = new District({
       divisionId: req.body.divisionId,
@@ -113,8 +91,10 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 // UPDATE district
-router.put("/:id", upload.single("image"), async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
+    await runMiddleware(imageUpload.single("image"), req, res);
+
     const updateData = {
       divisionId: req.body.divisionId,
       nameBn: req.body.nameBn,
@@ -123,7 +103,12 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     };
 
     if (req.file) {
-      updateData.image = `/uploads/districts/${req.file.filename}`;
+      const uploadedImage = await uploadSingleImage(
+        req.file,
+        "roamad-travels/districts"
+      );
+
+      updateData.image = uploadedImage?.secure_url || "";
     }
 
     const updatedDistrict = await District.findByIdAndUpdate(

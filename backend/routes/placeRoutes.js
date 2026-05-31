@@ -1,39 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
 const Place = require("../models/Place");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/places");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-
-    cb(null, uniqueName);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"), false);
-  }
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 20 * 1024 * 1024,
-  },
-});
+const {
+  imageUpload,
+  runMiddleware,
+  uploadSingleImage,
+} = require("../utils/uploadToCloudinary");
 
 // GET all places
 router.get("/", async (req, res) => {
@@ -104,9 +76,15 @@ router.get("/:id", async (req, res) => {
 });
 
 // CREATE place with image upload
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const image = req.file ? `/uploads/places/${req.file.filename}` : "";
+    await runMiddleware(imageUpload.single("image"), req, res);
+
+    const uploadedImage = req.file
+      ? await uploadSingleImage(req.file, "roamad-travels/places")
+      : null;
+
+    const image = uploadedImage?.secure_url || "";
 
     const newPlace = new Place({
       districtId: req.body.districtId,
@@ -130,8 +108,10 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 // UPDATE place with optional image upload
-router.put("/:id", upload.single("image"), async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
+    await runMiddleware(imageUpload.single("image"), req, res);
+
     const updateData = {
       districtId: req.body.districtId,
       nameBn: req.body.nameBn,
@@ -142,7 +122,12 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     };
 
     if (req.file) {
-      updateData.image = `/uploads/places/${req.file.filename}`;
+      const uploadedImage = await uploadSingleImage(
+        req.file,
+        "roamad-travels/places"
+      );
+
+      updateData.image = uploadedImage?.secure_url || "";
     }
 
     const updatedPlace = await Place.findByIdAndUpdate(

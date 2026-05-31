@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 
 export default function Home() {
@@ -10,10 +11,7 @@ const [homePackages, setHomePackages] = useState([]);
 const [activePlace, setActivePlace] = useState(null);
 const [homeAbout, setHomeAbout] = useState(null);
 const [testimonials, setTestimonials] = useState([]);
-const getImageUrl = (img) => {
-  if (!img) return "";
-  return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
-};
+const getImageUrl = (img) => resolveImageUrl(img);
 useEffect(() => {
   const fetchHomeAbout = async () => {
     try {

@@ -1,39 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
 const HomeAbout = require("../models/HomeAbout");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/home-about");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-
-    cb(null, uniqueName);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"), false);
-  }
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 20 * 1024 * 1024,
-  },
-});
+const {
+  imageUpload,
+  runMiddleware,
+  uploadSingleImage,
+} = require("../utils/uploadToCloudinary");
 
 router.get("/", async (req, res) => {
   try {
@@ -65,8 +37,10 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.put("/", upload.single("image"), async (req, res) => {
+router.put("/", async (req, res) => {
   try {
+    await runMiddleware(imageUpload.single("image"), req, res);
+
     let about = await HomeAbout.findOne().sort({ createdAt: -1 });
 
     const updateData = {
@@ -81,7 +55,12 @@ router.put("/", upload.single("image"), async (req, res) => {
     };
 
     if (req.file) {
-      updateData.image = `/uploads/home-about/${req.file.filename}`;
+      const uploadedImage = await uploadSingleImage(
+        req.file,
+        "roamad-travels/home-about"
+      );
+
+      updateData.image = uploadedImage?.secure_url || "";
     }
 
     if (!about) {

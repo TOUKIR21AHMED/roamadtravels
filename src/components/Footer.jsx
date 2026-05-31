@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 export default function Footer() {
   const [footerGallery, setFooterGallery] = useState([]);
@@ -19,8 +20,7 @@ export default function Footer() {
     fetchFooterGallery();
   }, []);
 
-  const getImageUrl = (img) =>
-    img?.startsWith("http") ? img : `${API_BASE_URL}${img}`;
+  const getImageUrl = (img) => resolveImageUrl(img);
 
   return (
     <div>
@@ -65,10 +65,10 @@ export default function Footer() {
                 <a className="btn btn-outline-light btn-social" href="/">
                   <i className="fab fa-facebook-f" />
                 </a>
-                <a className="btn btn-outline-light btn-social" href="">
+                <a className="btn btn-outline-light btn-social" href="https://www.youtube.com/">
                   <i className="fab fa-youtube" />
                 </a>
-                <a className="btn btn-outline-light btn-social" href="">
+                <a className="btn btn-outline-light btn-social" href="https://www.linkedin.com/">
                   <i className="fab fa-linkedin-in" />
                 </a>
               </div>
@@ -148,7 +148,7 @@ export default function Footer() {
             <div className="row">
               <div className="col-md-6 text-center text-md-start mb-3 mb-md-0">
                 ©{" "}
-                <a className="border-bottom" href="javascript:void(0)">
+                <a className="border-bottom" href="/">
                   Tourviz
                 </a>
                 , All Right Reserved. Designed By{" "}

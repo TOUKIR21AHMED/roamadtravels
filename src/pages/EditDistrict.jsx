@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 function EditDistrict() {
   const { id } = useParams();
@@ -20,10 +21,7 @@ function EditDistrict() {
 
   const [message, setMessage] = useState("");
 
-  const getImageUrl = (img) => {
-    if (!img) return "";
-    return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
-  };
+  const getImageUrl = (img) => resolveImageUrl(img);
 
   useEffect(() => {
     const loadDivisions = async () => {

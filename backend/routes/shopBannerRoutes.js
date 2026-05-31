@@ -1,39 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
 const ShopBanner = require("../models/ShopBanner");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/shop-banners");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-
-    cb(null, uniqueName);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"), false);
-  }
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 20 * 1024 * 1024,
-  },
-});
+const {
+  imageUpload,
+  runMiddleware,
+  uploadSingleImage,
+} = require("../utils/uploadToCloudinary");
 
 // GET all banners
 router.get("/", async (req, res) => {
@@ -84,13 +56,17 @@ router.get("/:id", async (req, res) => {
 });
 
 // CREATE banner
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", async (req, res) => {
   try {
+    await runMiddleware(imageUpload.single("image"), req, res);
+
     const { title, serial, status } = req.body;
 
-    const image = req.file
-      ? `/uploads/shop-banners/${req.file.filename}`
-      : "";
+    const uploadedImage = req.file
+      ? await uploadSingleImage(req.file, "roamad-travels/shop-banners")
+      : null;
+
+    const image = uploadedImage?.secure_url || "";
 
     if (!image) {
       return res.status(400).json({ message: "Banner image is required" });
@@ -114,8 +90,10 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 // UPDATE banner
-router.put("/:id", upload.single("image"), async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
+    await runMiddleware(imageUpload.single("image"), req, res);
+
     const { title, serial, status } = req.body;
 
     const banner = await ShopBanner.findById(req.params.id);
@@ -127,7 +105,12 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     if (title !== undefined) banner.title = title.trim();
 
     if (req.file) {
-      banner.image = `/uploads/shop-banners/${req.file.filename}`;
+      const uploadedImage = await uploadSingleImage(
+        req.file,
+        "roamad-travels/shop-banners"
+      );
+
+      banner.image = uploadedImage?.secure_url || "";
     }
 
     if (serial !== undefined) banner.serial = Number(serial || 0);

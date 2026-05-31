@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 const tabs = ["Details", "Itinerary", "Options", "Policy"];
 
@@ -421,11 +422,7 @@ export default function EventPackageDetails() {
           <div className="col-lg-8">
             <div className="details-card">
               <img
-  src={
-    activeImg?.startsWith("http")
-      ? activeImg
-      : `${API_BASE_URL}${activeImg}`
-  }
+  src={resolveImageUrl(activeImg)}
   alt={item.title}
   className="gallery-main"
 />
@@ -434,11 +431,7 @@ export default function EventPackageDetails() {
                 {gallery.map((img, index) => (
                   <img
                     key={index}
-                    src={
-  img?.startsWith("http")
-    ? img
-    : `${API_BASE_URL}${img}`
-}
+                    src={resolveImageUrl(img)}
                     alt=""
                     className={`gallery-thumb ${activeImg === img ? "active" : ""}`}
                     onClick={() => setActiveImg(img)}

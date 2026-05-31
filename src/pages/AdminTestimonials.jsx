@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 function AdminTestimonials() {
   const [items, setItems] = useState([]);
@@ -15,10 +16,7 @@ function AdminTestimonials() {
     message: "",
   });
 
-  const getImageUrl = (img) => {
-    if (!img) return "";
-    return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
-  };
+  const getImageUrl = (img) => resolveImageUrl(img);
 
   const fetchItems = async () => {
     const res = await axios.get(`${API_BASE_URL}/api/testimonials`);

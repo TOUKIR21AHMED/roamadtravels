@@ -1,7 +1,8 @@
 import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 const categories = [
   "Attractions & Shows",
@@ -23,14 +24,6 @@ const timeSlots = [
   { label: "06:00 - 12:00", value: "06-12" },
   { label: "12:00 - 18:00", value: "12-18" },
   { label: "18:00 - 00:00", value: "18-00" },
-];
-
-// Artistic height pattern for 9 images (3 rows × 3 cols)
-// Each cell gets a height class: tall, normal, short
-const heightPattern = [
-  "tall", "normal", "short",
-  "short", "tall", "normal",
-  "normal", "short", "tall",
 ];
 
 export default function EventsPackages() {
@@ -62,10 +55,9 @@ export default function EventsPackages() {
       .slice(0, 7);
   }, [search, suggestions]);
 
-  const getImageUrl = (img) =>
-    img?.startsWith("http") ? img : `${API_BASE_URL}${img}`;
+  const getImageUrl = (img) => resolveImageUrl(img);
 
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -92,7 +84,7 @@ export default function EventsPackages() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, category, duration, timeSlot, currency, minPrice, maxPrice, search]);
 
   const fetchSuggestions = async () => {
     try {
@@ -123,7 +115,7 @@ export default function EventsPackages() {
 
   useEffect(() => {
     fetchItems();
-  }, [page, category, duration, timeSlot, currency]);
+  }, [fetchItems]);
 
   const handleSearch = () => {
     setPage(1);

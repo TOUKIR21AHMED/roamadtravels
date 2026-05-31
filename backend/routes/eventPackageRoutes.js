@@ -1,7 +1,11 @@
 const express = require("express");
-const multer = require("multer");
-const path = require("path");
 const EventPackage = require("../models/EventPackage");
+const {
+  imageUpload,
+  runMiddleware,
+  uploadMultipleImages,
+  uploadSingleImage,
+} = require("../utils/uploadToCloudinary");
 
 const router = express.Router();
 
@@ -15,37 +19,6 @@ const makeSlug = (text) => {
     .replace(/-+/g, "-");
 };
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/events");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-
-    cb(null, uniqueName);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"), false);
-  }
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 20 * 1024 * 1024,
-  },
-});
-
 const parseArray = (value) => {
   try {
     return JSON.parse(value || "[]");
@@ -54,96 +27,103 @@ const parseArray = (value) => {
   }
 };
 
+const parseNumber = (value, fallback = 0) => {
+  const normalized = Array.isArray(value) ? value[value.length - 1] : value;
+  const parsed = Number(normalized);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
 // CREATE
-router.post(
-  "/",
-  upload.fields([
-    { name: "mainImage", maxCount: 1 },
-    { name: "galleryImages", maxCount: 20 },
-  ]),
-  async (req, res) => {
-    try {
-      const slugBase = makeSlug(req.body.title);
-      const slug = req.body.slug
-        ? makeSlug(req.body.slug)
-        : `${slugBase}-${Date.now()}`;
+router.post("/", async (req, res) => {
+  try {
+    await runMiddleware(
+      imageUpload.fields([
+        { name: "mainImage", maxCount: 1 },
+        { name: "galleryImages", maxCount: 20 },
+      ]),
+      req,
+      res
+    );
 
-      const mainImage = req.files?.mainImage?.[0]
-        ? `/uploads/events/${req.files.mainImage[0].filename}`
-        : "";
+    console.log("Event package create body:", req.body);
 
-      const galleryImages = req.files?.galleryImages
-        ? req.files.galleryImages.map(
-            (file) => `/uploads/events/${file.filename}`
-          )
-        : [];
+    const slugBase = makeSlug(req.body.title);
+    const slug = req.body.slug
+      ? makeSlug(req.body.slug)
+      : `${slugBase}-${Date.now()}`;
 
-      if (!mainImage) {
-        return res.status(400).json({
-          message: "Main image is required",
-        });
-      }
+    const mainImageFile = req.files?.mainImage?.[0];
+    const galleryFiles = req.files?.galleryImages || [];
 
-      const eventPackage = await EventPackage.create({
-        title: req.body.title,
-        slug,
+    const mainImageResult = mainImageFile
+      ? await uploadSingleImage(mainImageFile, "roamad-travels/event-packages")
+      : null;
 
-        category: req.body.category,
-        location: req.body.location,
-        country: req.body.country,
+    const galleryImageResults = await uploadMultipleImages(
+      galleryFiles,
+      "roamad-travels/event-packages"
+    );
 
-        mainImage,
-        galleryImages,
-
-        duration: req.body.duration,
-        durationFilter: req.body.durationFilter,
-        timeSlot: req.body.timeSlot,
-        minimumPeople: req.body.minimumPeople,
-
-priceBdt: isNaN(Number(req.body.priceBdt))
-  ? 0
-  : Number(req.body.priceBdt),
-
-priceUsd: isNaN(Number(req.body.priceUsd))
-  ? 0
-  : Number(req.body.priceUsd),
-        currencyDefault: req.body.currencyDefault,
-
-        shortDescription: req.body.shortDescription,
-        overview: req.body.overview,
-        locationDetails: req.body.locationDetails,
-        timingDetails: req.body.timingDetails,
-        description: req.body.description,
-
-        mapEmbedUrl: req.body.mapEmbedUrl,
-        cancellationPolicy: req.body.cancellationPolicy,
-        refundPolicy: req.body.refundPolicy,
-
-        inclusions: parseArray(req.body.inclusions),
-        exclusions: parseArray(req.body.exclusions),
-        requirements: parseArray(req.body.requirements),
-        facilities: parseArray(req.body.facilities),
-        additionalInfo: parseArray(req.body.additionalInfo),
-        travelTips: parseArray(req.body.travelTips),
-
-        itinerary: parseArray(req.body.itinerary),
-        options: parseArray(req.body.options),
-
-        isFeatured: req.body.isFeatured === "true",
-        isPublished: req.body.isPublished === "true",
-      });
-
-      res.status(201).json(eventPackage);
-    } catch (error) {
-      console.log("Event package create error:", error);
-
-      res.status(500).json({
-        message: "Event package create failed",
-        error: error.message,
+    if (!mainImageResult?.secure_url) {
+      return res.status(400).json({
+        message: "Main image is required",
       });
     }
+
+    const eventPackage = await EventPackage.create({
+      title: req.body.title,
+      slug,
+
+      category: req.body.category,
+      location: req.body.location,
+      country: req.body.country,
+
+      mainImage: mainImageResult.secure_url,
+      galleryImages: galleryImageResults.map((item) => item.secure_url),
+
+      duration: req.body.duration,
+      durationFilter: req.body.durationFilter,
+      timeSlot: req.body.timeSlot,
+      minimumPeople: req.body.minimumPeople,
+
+      priceBdt: parseNumber(req.body.priceBdt),
+      priceUsd: parseNumber(req.body.priceUsd),
+      currencyDefault: req.body.currencyDefault,
+
+      shortDescription: req.body.shortDescription,
+      overview: req.body.overview,
+      locationDetails: req.body.locationDetails,
+      timingDetails: req.body.timingDetails,
+      description: req.body.description,
+
+      mapEmbedUrl: req.body.mapEmbedUrl,
+      cancellationPolicy: req.body.cancellationPolicy,
+      refundPolicy: req.body.refundPolicy,
+
+      inclusions: parseArray(req.body.inclusions),
+      exclusions: parseArray(req.body.exclusions),
+      requirements: parseArray(req.body.requirements),
+      facilities: parseArray(req.body.facilities),
+      additionalInfo: parseArray(req.body.additionalInfo),
+      travelTips: parseArray(req.body.travelTips),
+
+      itinerary: parseArray(req.body.itinerary),
+      options: parseArray(req.body.options),
+
+      isFeatured: req.body.isFeatured === "true",
+      isPublished: req.body.isPublished === "true",
+    });
+
+    res.status(201).json(eventPackage);
+  } catch (error) {
+    console.log("Event package create error:", error);
+
+    res.status(500).json({
+      message: "Event package create failed",
+      error: error.message,
+    });
   }
-);
+});
 
 // GET ALL
 router.get("/", async (req, res) => {
@@ -260,26 +240,93 @@ router.get("/:slug", async (req, res) => {
   }
 });
 
-// UPDATE old JSON update thaklo
+// UPDATE
 router.put("/:id", async (req, res) => {
   try {
-    const updateData = { ...req.body };
-
-    if (req.body.slug) {
-      updateData.slug = makeSlug(req.body.slug);
-    }
-
-    const eventPackage = await EventPackage.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
+    await runMiddleware(
+      imageUpload.fields([
+        { name: "mainImage", maxCount: 1 },
+        { name: "galleryImages", maxCount: 20 },
+      ]),
+      req,
+      res
     );
+
+    console.log("Event package update body:", req.body);
+
+    const eventPackage = await EventPackage.findById(req.params.id);
 
     if (!eventPackage) {
       return res.status(404).json({ message: "Event package not found" });
     }
 
-    res.json(eventPackage);
+    const updateData = {
+      title: req.body.title,
+      slug: req.body.slug ? makeSlug(req.body.slug) : eventPackage.slug,
+      category: req.body.category,
+      location: req.body.location,
+      country: req.body.country,
+      duration: req.body.duration,
+      durationFilter: req.body.durationFilter,
+      timeSlot: req.body.timeSlot,
+      minimumPeople: req.body.minimumPeople,
+      priceBdt: parseNumber(req.body.priceBdt),
+      priceUsd: parseNumber(req.body.priceUsd),
+      currencyDefault: req.body.currencyDefault,
+      shortDescription: req.body.shortDescription,
+      overview: req.body.overview,
+      locationDetails: req.body.locationDetails,
+      timingDetails: req.body.timingDetails,
+      description: req.body.description,
+      mapEmbedUrl: req.body.mapEmbedUrl,
+      cancellationPolicy: req.body.cancellationPolicy,
+      refundPolicy: req.body.refundPolicy,
+      inclusions: parseArray(req.body.inclusions),
+      exclusions: parseArray(req.body.exclusions),
+      requirements: parseArray(req.body.requirements),
+      facilities: parseArray(req.body.facilities),
+      additionalInfo: parseArray(req.body.additionalInfo),
+      travelTips: parseArray(req.body.travelTips),
+      itinerary: parseArray(req.body.itinerary),
+      options: parseArray(req.body.options),
+      isFeatured: req.body.isFeatured === "true",
+      isPublished: req.body.isPublished === "true",
+    };
+
+    const mainImageFile = req.files?.mainImage?.[0];
+    if (mainImageFile) {
+      const uploadedMainImage = await uploadSingleImage(
+        mainImageFile,
+        "roamad-travels/event-packages"
+      );
+
+      updateData.mainImage = uploadedMainImage?.secure_url || eventPackage.mainImage;
+    }
+
+    const oldGalleryImages = parseArray(req.body.oldGalleryImages);
+    const newGalleryFiles = req.files?.galleryImages || [];
+
+    if (newGalleryFiles.length > 0) {
+      const uploadedGalleryImages = await uploadMultipleImages(
+        newGalleryFiles,
+        "roamad-travels/event-packages"
+      );
+
+      updateData.galleryImages = [
+        ...oldGalleryImages,
+        ...uploadedGalleryImages.map((item) => item.secure_url),
+      ];
+    } else if (req.body.oldGalleryImages) {
+      updateData.galleryImages = oldGalleryImages;
+    }
+
+    const updatedEventPackage = await EventPackage.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    res.json(updatedEventPackage);
   } catch (error) {
     res.status(500).json({
       message: "Event package update failed",

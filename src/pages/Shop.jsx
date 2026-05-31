@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { FaSearch, FaShoppingCart, FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FaChevronLeft, FaChevronRight, FaSearch, FaShoppingCart, FaTimes } from "react-icons/fa";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 
 const ProductSkeleton = () => {
@@ -21,13 +22,7 @@ const ProductSkeleton = () => {
     </div>
   );
 };
-const getImageUrl = (img) => {
-  if (!img) return "";
-
-  return img.startsWith("http")
-    ? img
-    : `${API_BASE_URL}${img}`;
-};
+const getImageUrl = (img) => resolveImageUrl(img);
 const Shop = () => {
   const [wishlist, setWishlist] = useState(() => {
   const saved = localStorage.getItem("shop_wishlist");
@@ -70,30 +65,30 @@ const Shop = () => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
   }, [cartItems]);
 
-  const fetchBanners = async () => {
+  const fetchBanners = useCallback(async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/shop-banners/active/list`);
       setBanners(res.data || []);
     } catch (error) {
       console.error("Failed to fetch banners", error);
     }
-  };
+  }, []);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/product-categories`);
       const activeCats = (res.data || []).filter((cat) => cat.status === "active");
       setCategories(activeCats);
 
-      if (activeCats.length > 0 && !activeCategory) {
-        setActiveCategory(activeCats[0]._id);
+      if (activeCats.length > 0) {
+        setActiveCategory((current) => current || activeCats[0]._id);
       }
     } catch (error) {
       console.error("Failed to fetch categories", error);
     }
-  };
+  }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       setMessage("");
@@ -123,18 +118,18 @@ const Shop = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeCategory, currentPage, sortOption, searchText]);
 
   useEffect(() => {
     fetchBanners();
     fetchCategories();
-  }, []);
+  }, [fetchBanners, fetchCategories]);
 
   useEffect(() => {
     if (activeCategory || searchText.trim().length >= 2) {
       fetchProducts();
     }
-  }, [activeCategory, currentPage, sortOption, searchText]);
+  }, [activeCategory, currentPage, sortOption, searchText, fetchProducts]);
 
   useEffect(() => {
     if (banners.length <= 1) return;

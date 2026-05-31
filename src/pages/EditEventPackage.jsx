@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 const categories = [
   "Attractions & Shows",
@@ -20,10 +21,7 @@ const durations = [
 
 const timeSlots = ["00-06", "06-12", "12-18", "18-00"];
 
-const getImageUrl = (img) => {
-  if (!img) return "";
-  return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
-};
+const getImageUrl = (img) => resolveImageUrl(img);
 
 export default function EditEventPackage() {
   const { id } = useParams();
@@ -199,9 +197,6 @@ export default function EditEventPackage() {
       Object.keys(form).forEach((key) => {
         formData.append(key, form[key]);
       });
-
-      formData.append("priceBdt", form.priceBdt || 0);
-      formData.append("priceUsd", form.priceUsd || 0);
 
       formData.append("oldGalleryImages", JSON.stringify(oldGalleryImages));
 

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PlaceRichTextEditor from "../components/PlaceRichTextEditor";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 function EditPlace() {
   const { id } = useParams();
@@ -24,8 +25,7 @@ function EditPlace() {
   const [message, setMessage] = useState("");
 
   const getImageUrl = (img) => {
-    if (!img) return "";
-    return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
+    return resolveImageUrl(img);
   };
 
   useEffect(() => {

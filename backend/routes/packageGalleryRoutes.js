@@ -1,33 +1,12 @@
 const express = require("express");
-const multer = require("multer");
-const path = require("path");
 const PackageGallery = require("../models/PackageGallery");
+const {
+  imageUpload,
+  runMiddleware,
+  uploadMultipleImages,
+} = require("../utils/uploadToCloudinary");
 
 const router = express.Router();
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/package-gallery");
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      Date.now() +
-        "-" +
-        Math.round(Math.random() * 1e9) +
-        path.extname(file.originalname)
-    );
-  },
-});
-
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) cb(null, true);
-    else cb(new Error("Only image files are allowed"), false);
-  },
-  limits: { fileSize: 20 * 1024 * 1024 },
-});
 
 // random 9 images for frontend
 router.get("/random", async (req, res) => {
@@ -62,15 +41,25 @@ router.get("/", async (req, res) => {
 });
 
 // upload multiple
-router.post("/", upload.array("images", 50), async (req, res) => {
+router.post("/", async (req, res) => {
   try {
+    await runMiddleware(imageUpload.array("images", 50), req, res);
+
     const files = req.files || [];
+    const uploadedImages = await uploadMultipleImages(
+      files,
+      "roamad-travels/package-gallery"
+    );
+
+    if (!uploadedImages.length) {
+      return res.status(400).json({ message: "Please select at least one image" });
+    }
 
     const saved = await PackageGallery.insertMany(
-      files.map((file) => ({
+      uploadedImages.map((file) => ({
         title: req.body.title || "",
         location: req.body.location || "",
-        image: `/uploads/package-gallery/${file.filename}`,
+        image: file.secure_url,
         isActive: true,
       }))
     );

@@ -3,6 +3,7 @@ import DOMPurify from "dompurify";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
+import { getImageUrl as resolveImageUrl } from "../utils/imageUrl";
 
 const sanitizeConfig = {
   USE_PROFILES: { html: true },
@@ -130,8 +131,7 @@ function DistrictPlaces() {
   const [weatherData, setWeatherData] = useState(null);
 
   const getImageUrl = (img) => {
-    if (!img) return "";
-    return img.startsWith("http") ? img : `${API_BASE_URL}${img}`;
+    return resolveImageUrl(img);
   };
 
   useEffect(() => {
