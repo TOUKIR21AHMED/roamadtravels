@@ -115,6 +115,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       shortDescription: req.body.shortDescription,
       fullDescription: req.body.fullDescription,
       locationBn: req.body.locationBn,
+      weatherLocationEn: req.body.weatherLocationEn,
     });
 
     const savedPlace = await newPlace.save();
@@ -137,6 +138,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       shortDescription: req.body.shortDescription,
       fullDescription: req.body.fullDescription,
       locationBn: req.body.locationBn,
+      weatherLocationEn: req.body.weatherLocationEn,
     };
 
     if (req.file) {

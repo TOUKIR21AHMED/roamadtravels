@@ -32,6 +32,10 @@ const placeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    weatherLocationEn: {
+      type: String,
+      trim: true,
+    },
     detailsButtonText: {
       type: String,
       default: "বিস্তারিত",

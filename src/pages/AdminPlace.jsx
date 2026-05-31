@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import PlaceRichTextEditor from "../components/PlaceRichTextEditor";
 import API_BASE_URL from "../config";
 function AdminPlace() {
   const [districts, setDistricts] = useState([]);
@@ -9,6 +10,7 @@ function AdminPlace() {
   shortDescription: "",
   fullDescription: "",
   locationBn: "",
+  weatherLocationEn: "",
 });
 
 const [imageFile, setImageFile] = useState(null);
@@ -17,17 +19,17 @@ const [imagePreview, setImagePreview] = useState("");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/districts`);
+        setDistricts(res.data);
+      } catch (error) {
+        console.log("District fetch error:", error);
+      }
+    };
+
     fetchDistricts();
   }, []);
-
-  const fetchDistricts = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/districts`);
-      setDistricts(res.data);
-    } catch (error) {
-      console.log("District fetch error:", error);
-    }
-  };
 
   const handleChange = (e) => {
     setFormData({
@@ -54,6 +56,7 @@ data.append("nameBn", formData.nameBn);
 data.append("shortDescription", formData.shortDescription);
 data.append("fullDescription", formData.fullDescription);
 data.append("locationBn", formData.locationBn);
+data.append("weatherLocationEn", formData.weatherLocationEn);
 
 if (imageFile) {
   data.append("image", imageFile);
@@ -74,6 +77,7 @@ await axios.post(`${API_BASE_URL}/api/places`, data, {
         shortDescription: "",
         fullDescription: "",
         locationBn: "",
+        weatherLocationEn: "",
       });
     } catch (error) {
       console.log("Place add error:", error);
@@ -137,6 +141,33 @@ await axios.post(`${API_BASE_URL}/api/places`, data, {
         .admin-textarea{
           min-height: 130px;
           resize: vertical;
+        }
+
+        .place-rich-editor .ql-toolbar.ql-snow{
+          border: 1px solid #d8e2d2;
+          border-bottom: none;
+          border-radius: 14px 14px 0 0;
+          background: #f7fbf5;
+        }
+
+        .place-rich-editor .ql-container.ql-snow{
+          border: 1px solid #d8e2d2;
+          border-radius: 0 0 14px 14px;
+          min-height: 220px;
+          font-size: 16px;
+          font-family: inherit;
+        }
+
+        .place-rich-editor .ql-editor{
+          min-height: 220px;
+          line-height: 1.85;
+          color: #24331d;
+        }
+
+        .place-rich-editor .ql-editor.ql-blank::before{
+          color: #86928a;
+          font-style: normal;
+          left: 15px;
         }
 
         .admin-btn{
@@ -280,6 +311,21 @@ await axios.post(`${API_BASE_URL}/api/places`, data, {
             />
           </div>
 
+          <div className="col-md-6">
+            <label className="admin-label">Weather Location English</label>
+            <input
+              type="text"
+              className="admin-input"
+              name="weatherLocationEn"
+              value={formData.weatherLocationEn}
+              onChange={handleChange}
+              placeholder="Cox's Bazar / Dhaka / Sylhet / Bandarban / Chittagong"
+            />
+            <small style={{ color: "#60705b", display: "block", marginTop: 6 }}>
+              আবহাওয়ার জন্য ইংরেজিতে লোকেশন দিন, যেমন Cox's Bazar / Dhaka / Sylhet।
+            </small>
+          </div>
+
           <div className="col-12">
             <label className="admin-label">Short Description</label>
             <textarea
@@ -293,14 +339,16 @@ await axios.post(`${API_BASE_URL}/api/places`, data, {
 
           <div className="col-12">
             <label className="admin-label">Full Description</label>
-            <textarea
-              className="admin-textarea"
-              name="fullDescription"
-              rows="6"
+            <PlaceRichTextEditor
               value={formData.fullDescription}
-              onChange={handleChange}
-              required
-            ></textarea>
+              onChange={(content) =>
+                setFormData((current) => ({
+                  ...current,
+                  fullDescription: content,
+                }))
+              }
+              placeholder="পূর্ণ বিবরণ লিখুন, শিরোনাম, তালিকা, লিংক, রঙ সবকিছু যোগ করতে পারবেন"
+            />
           </div>
 
           <div className="col-12 text-center">

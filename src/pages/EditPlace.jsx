@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import PlaceRichTextEditor from "../components/PlaceRichTextEditor";
 import API_BASE_URL from "../config";
 
 function EditPlace() {
@@ -17,6 +18,7 @@ function EditPlace() {
     shortDescription: "",
     fullDescription: "",
     locationBn: "",
+    weatherLocationEn: "",
   });
 
   const [message, setMessage] = useState("");
@@ -27,39 +29,40 @@ function EditPlace() {
   };
 
   useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/districts`);
+        setDistricts(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const fetchPlace = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/places`);
+        const found = res.data.find((item) => item._id === id);
+
+        if (found) {
+          setFormData({
+            districtId: found.districtId?._id || found.districtId,
+            nameBn: found.nameBn,
+            shortDescription: found.shortDescription,
+            fullDescription: found.fullDescription,
+            locationBn: found.locationBn,
+            weatherLocationEn: found.weatherLocationEn || "",
+          });
+
+          setImagePreview(getImageUrl(found.image));
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     fetchDistricts();
     fetchPlace();
-  }, []);
-
-  const fetchDistricts = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/districts`);
-      setDistricts(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchPlace = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/places`);
-      const found = res.data.find((item) => item._id === id);
-
-      if (found) {
-        setFormData({
-          districtId: found.districtId?._id || found.districtId,
-          nameBn: found.nameBn,
-          shortDescription: found.shortDescription,
-          fullDescription: found.fullDescription,
-          locationBn: found.locationBn,
-        });
-
-        setImagePreview(getImageUrl(found.image));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  }, [id]);
 
   const handleChange = (e) => {
     setFormData({
@@ -88,6 +91,7 @@ function EditPlace() {
       data.append("shortDescription", formData.shortDescription);
       data.append("fullDescription", formData.fullDescription);
       data.append("locationBn", formData.locationBn);
+      data.append("weatherLocationEn", formData.weatherLocationEn);
 
       if (imageFile) {
         data.append("image", imageFile);
@@ -118,11 +122,40 @@ function EditPlace() {
         padding: "60px 15px",
       }}
     >
+      <style>{`
+        .edit-place-shell .place-rich-editor .ql-toolbar.ql-snow{
+          border: 1px solid #d8e2d2;
+          border-bottom: none;
+          border-radius: 14px 14px 0 0;
+          background: #f7fbf5;
+        }
+
+        .edit-place-shell .place-rich-editor .ql-container.ql-snow{
+          border: 1px solid #d8e2d2;
+          border-radius: 0 0 14px 14px;
+          min-height: 220px;
+          font-size: 16px;
+          font-family: inherit;
+        }
+
+        .edit-place-shell .place-rich-editor .ql-editor{
+          min-height: 220px;
+          line-height: 1.85;
+          color: #24331d;
+        }
+
+        .edit-place-shell .place-rich-editor .ql-editor.ql-blank::before{
+          color: #86928a;
+          font-style: normal;
+          left: 15px;
+        }
+      `}</style>
       <div className="container">
         <div
           className="bg-white shadow rounded p-4"
           style={{ maxWidth: "950px", margin: "0 auto" }}
         >
+          <div className="edit-place-shell">
           <h2
             className="mb-4 text-center"
             style={{ color: "#1D3815" }}
@@ -256,6 +289,23 @@ function EditPlace() {
               />
             </div>
 
+            <div className="col-md-6">
+              <label className="form-label">Weather Location English</label>
+
+              <input
+                type="text"
+                className="form-control"
+                name="weatherLocationEn"
+                value={formData.weatherLocationEn}
+                onChange={handleChange}
+                placeholder="Cox's Bazar / Dhaka / Sylhet / Bandarban / Chittagong"
+              />
+
+              <small className="text-muted d-block mt-1">
+                আবহাওয়ার জন্য ইংরেজিতে লোকেশন দিন, যেমন Cox's Bazar / Dhaka / Sylhet।
+              </small>
+            </div>
+
             <div className="col-12">
               <label className="form-label">Short Description</label>
 
@@ -271,15 +321,16 @@ function EditPlace() {
 
             <div className="col-12">
               <label className="form-label">Full Description</label>
-
-              <textarea
-                className="form-control"
-                rows="6"
-                name="fullDescription"
+              <PlaceRichTextEditor
                 value={formData.fullDescription}
-                onChange={handleChange}
-                required
-              ></textarea>
+                onChange={(content) =>
+                  setFormData((current) => ({
+                    ...current,
+                    fullDescription: content,
+                  }))
+                }
+                placeholder="পূর্ণ বিবরণ লিখুন, শিরোনাম, তালিকা, লিংক, রঙ সবকিছু যোগ করতে পারবেন"
+              />
             </div>
 
             <div className="col-12 text-center">
@@ -288,6 +339,7 @@ function EditPlace() {
               </button>
             </div>
           </form>
+          </div>
         </div>
       </div>
     </div>
